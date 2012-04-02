@@ -1,0 +1,85 @@
+@charset "utf-8";
+/*@base-url: "http://127\.0\.0\.1/sescooprn/";*/
+@base-url: "http://projetos.profissionaldobrasil.com.br/sescooprn/";
+
+/*@color_green_dark: #0b683f;*/
+@color_green_darker: #073;
+@color_green_dark: #00933d;
+@color_green_light: #00a85a;
+@color_blue_dark: #3C56A3;
+@color_blue_light: #516CBF;
+@color_blue_facebook: #1E4B81;
+@color_blue_twitter: #6AB5C9;
+@color_red_dark: #d00405;
+@color_red_light: #ed3237;
+@color_orange_light: #f58634;
+@color_orange_rss: #FF6504;
+@color_gray_dark: #333;
+@color_gray_medium: #434343;
+@color_gray_light: #666;
+@color_silver_medium: #999;
+@color_silver_dark: #ccc;
+@color_silver: #dfdfdf;
+@color_silver_light: #f0f0f0;
+@color_silver_lighter: #f8f8f8;
+
+@font_family:'PTSansRegular', Arial, "Helvetica Neue", Helvetica,sans-serif;
+@width_main:960px;
+@width_aside_right:260px;
+@width_content_place:620px;
+
+
+.rounded-corners (@radius: 5px) {
+	-webkit-border-radius:	@radius;
+	-moz-border-radius:		@radius;
+	-o-border-radius:		@radius;
+	-khtml-border-radius:	@radius;
+	border-radius:			@radius;
+
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}
+/*.box-shadow (@x: 0, @y: 0, @blur: 1px, @alpha) {
+	@val: @x @y @blur rgba(0, 0, 0, @alpha);
+
+	box-shadow:         @val;
+	-webkit-box-shadow: @val;
+	-moz-box-shadow:    @val;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}*/
+.box-shadow (@val) {
+	/*@val: @x @y @blur rgba(0, 0, 0, @alpha);*/
+
+	-webkit-box-shadow:	@val;
+	-moz-box-shadow:	@val;
+	-o-box-shadow:		@val;
+	-khtml-box-shadow:	@val;
+	box-shadow:			@val;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}
+
+.text-shadow(@params){
+	text-shadow:@params;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}
+
+.transition(@property:background-color,@duration:.3s,@timing:linear,@delay:0){
+	@val: @property @duration @timing @delay;
+	-webkit-transition: @val;
+	-moz-transition: @val;
+	-o-transition: @val;
+	transition: @val;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}
+
+.opacity(@op:100){
+    filter:alpha(opacity=@op);
+    -moz-opacity:@op/100;
+    -khtml-opacity:@op/100;
+    opacity:@op/100;
+}
+
+.gradient(@from:#000, @to:#fff){
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=@from,endColorstr=@to);
+	background:-webkit-gradient(linear,left top,left bottom,from(@from),to(@to));
+	background:-moz-linear-gradient(top, @from,@to);
+}

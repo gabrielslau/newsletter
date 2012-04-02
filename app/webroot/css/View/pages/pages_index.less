@@ -1,0 +1,67 @@
+/*
+ * PAGES INDEX
+ * 
+ * Elementos que formam a estrutura de uma página de conteúdo (notícias, páginas estáticas, etc)
+ *
+ * @section structure
+ */
+@import url("../../site/bootstrap.less"); /* Estilos e variáveis utilizados por todos */
+
+
+/*.pages{*/
+
+	#NoticiaSlider{
+		background:@color_green_dark;.box-shadow(0px 1px 2px rgba(0,0,0,.7));padding:20px 0;.rounded-corners;margin-bottom:30px;
+
+		a{
+			color:#f0f0f0;
+			&:hover{color:#fff;text-decoration:none;}
+		}
+
+
+		.foto{
+			.box-shadow(0px 0px 5px rgba(0,0,0,.5));
+			.borda-interna:hover{
+				border-color:#fff;
+			}
+		}
+
+		.ContentLarge{
+			overflow:hidden;margin:0 20px 20px;color:#fff;
+			.foto{float:left;margin-right:20px;}
+			.info{
+				p{
+					line-height:16px;
+				}
+				.categoria{font-size:10px;display: block;margin-bottom:10px;}
+
+
+			}
+		}
+		.ContentLarge, .ContentLarge .item{
+			height:275px;width:580px;
+		}
+
+		.ContentThumb{
+			padding: 8px 0 6px 25px;height:70px;width:600px;background:@color_green_darker;.box-shadow(0px 1px 2px rgba(0,0,0,.7));
+			.foto{
+				height:60px;margin:5px;float:left;
+			}
+		}
+	}
+
+	#NoticiasPorGrupo{
+		/*background-color: #acd;*/
+		.itemGroup{
+			.item{width:300px;float:left;margin-bottom:15px}
+		}
+
+		.noticia{
+			height:45px;padding: 10px 0;border-bottom:1px solid #dfdfdf;margin-bottom:15px;
+			.foto{margin-right:15px;float:left;}
+			/*.firstTitle{display:block;float:left;}*/
+		}
+
+	}
+
+/*}*/

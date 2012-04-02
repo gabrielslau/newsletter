@@ -1,0 +1,17 @@
+/*@base-url: "http://127\.0\.0\.1/sescooprn/";*/
+@base-url: "http://projetos.profissionaldobrasil.com.br/sescooprn/";
+
+.rounded-corners (@radius: 5px) {
+	border-radius: @radius;
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}
+.box-shadow (@x: 0, @y: 0, @blur: 1px, @alpha) {
+	@val: @x @y @blur rgba(0, 0, 0, @alpha);
+
+	box-shadow:         @val;
+	-webkit-box-shadow: @val;
+	-moz-box-shadow:    @val;
+	behaviour:url("@{base-url}css/ie-css3.htc")
+}

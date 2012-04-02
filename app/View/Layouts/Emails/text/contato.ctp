@@ -1,0 +1,1 @@
+<?php if(isset($content_for_layout)) echo $content_for_layout;?>

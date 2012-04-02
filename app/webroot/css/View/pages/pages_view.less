@@ -1,0 +1,68 @@
+/*
+ * PAGES VIEW
+ * 
+ * Elementos que formam a estrutura de uma página de conteúdo (notícias, páginas estáticas, etc)
+ *
+ * @section structure
+ */
+@import url("../../site/bootstrap.less"); /* Estilos e variáveis utilizados por todos */
+
+.notice{color:#666;font-style:italic;font-size:13px}
+
+
+.pages, .article{
+	
+	.PageTitle{
+		padding-bottom:15px;background:url("@{base-url}img/header_bg.gif") repeat-x center bottom;margin-bottom:15px;
+		h1{color:#333;font:22px/24px "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-1px;margin-bottom:10px;}
+		h2{color:#999;font:18px/20px Georgia,"Times New Roman",Times,serif;text-align:justify}
+
+		.mws-i-24{width:24px;height:24px;float:left;margin-right:10px;}
+	}
+
+	.PageDate{
+		color:#999;font:italic 11px Georgia,"Times New Roman",Times,serif;/*border-top:1px dashed #dfdfdf;*/padding:10px 0;margin-bottom:10px;
+		span{display:inline-block;}
+	}
+
+	.PageImage{
+		margin-bottom:20px; /*overflow: hidden;*/ /*.box-shadow(0,0,5px,.3);*/
+		img{
+			border:5px solid #f8f8f8;
+			padding: 1px;
+			.box-shadow(1px 1px 2px rgba(0,0,0,.1));
+			&:hover{border-color:#f0f0f0;}
+		}
+	}
+	
+	.PageContent{
+		margin-bottom:15px;font:15px/1.5em arial,helvetica,tahoma,sans-serif;text-align:justify;
+		p{margin-bottom:20px}
+	}
+
+	#RelatedPages .widget-titulo{border-bottom:1px solid #dfdfdf;margin-bottom:10px}
+
+
+	/*
+	** NEIGHBORS
+	** Elementos flutuantes que mostrar as páginas ("anterior" e "próximo") relacionadas a que está em exibição
+	*/
+	.neighbors{
+		position:fixed;z-index:99999;top:40%;width:50px;height:105px;border-color:#3c56a3;
+		.content{
+			position:absolute;top:0;left:0;width:190px;height:85px;display:none;
+			strong{display:block;color:#3c56a3;padding:10px 0 5px 0;margin-bottom:5px}
+			a{color:#333;font-size:13px}
+			p{margin:0;padding:0;}
+		}
+	}
+
+	#containerLeftArrow{
+		left:0;background:url("@{base-url}img/arrow_e.png") no-repeat left center #fff;.rounded-corners(0 5px 5px 0); .box-shadow(1px 1px 2px rgba(0,0,0,.5));
+		#containerContentLeftArrow{padding:8px 10px 10px 50px}
+	}
+	#containerRightArrow{
+		right:0;background:url("@{base-url}img/arrow_d.png") no-repeat right center #fff;.rounded-corners(5px 0 0 5px); .box-shadow(-1px 1px 2px rgba(0,0,0,.5));
+		#containerContentRightArrow{padding:8px 50px 10px 10px}
+	}
+}
