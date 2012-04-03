@@ -1,6 +1,8 @@
 app/Config
 
 app/Test
+app/webroot/index.php
+app/webroot/js/ckeditor/ckfinder/config.php
 
 app/tmp
 newsletter.sublime-project
