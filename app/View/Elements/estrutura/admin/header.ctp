@@ -23,7 +23,9 @@
             <!-- Username and Functions -->
             <div id="mws-user-functions">
                 <div id="mws-username">
-                    Olá, <?php echo AuthComponent::user('nome'); ?>
+                    Olá, <?php 
+                    // echo AuthComponent::user('nome'); 
+                    ?>
                 </div>
                 <ul>
                 	<!-- <li><a href="#">Profile</a></li> -->

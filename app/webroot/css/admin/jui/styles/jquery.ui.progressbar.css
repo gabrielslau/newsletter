@@ -1,14 +1,2 @@
-/*
- * jQuery UI Progressbar 1.8.16
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Progressbar#theming
- */
- 
-.mws-form-item .ui-progressbar { position:relative; top:10px; }
-
-.ui-progressbar { height: 12px; background:url(../../../images/jui/progressbar/bg.png) repeat-x; }
-.ui-progressbar .ui-progressbar-value { height:12px; background:url(../../../images/jui/progressbar/fill.png) repeat-x; }
+/* This beautiful CSS-File has been crafted with LESS (lesscss.org) and compiled by simpLESS (wearekiss.com/simpless) */
+@charset "utf-8";.smooth{-webkit-font-smoothing:antialiased;-moz-font-smoothing:antialiased;-o-font-smoothing:antialiased;-ms-font-smoothing:antialiased;font-smoothing:antialiased}.mws-form-item .ui-progressbar{position:relative;top:10px}.ui-progressbar{height:12px;background:url("http://127\.0\.0\.1/newsletter/img/admin/jui/progressbar/bg.png") repeat-x}.ui-progressbar .ui-progressbar-value{height:12px;background:url("http://127\.0\.0\.1/newsletter/img/admin/jui/progressbar/fill.png") repeat-x}

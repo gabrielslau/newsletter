@@ -2,28 +2,33 @@
 	// var loadercontent = $('#loader-content');
 	var webroot = $('#webroot').val();
 	var ABS_PATH = $('#ABS_PATH').val();
-	var SessionID = $('#SessionID').val();
+	// var SessionID = $('#SessionID').val();
 	var working = false;
 	var AnexosAdicionados = 0;
 
+	$("#NewslettersqueueDataEnvio").datetimepicker({ 
+		minDate: 0, 
+		maxDate: "+1M +10D",
+		dateFormat : 'dd/mm/yy'
+	});
 
 	var configContent = {
 		toolbar: 'Geral',
 		// extraPlugins : 'uicolor',
 		filebrowserBrowseUrl 		: webroot+'js/ckeditor/ckfinder/ckfinder.html',
 		filebrowserImageBrowseUrl 	: webroot+'js/ckeditor/ckfinder/ckfinder.html?type=Images',
-		filebrowserFlashBrowseUrl 	: webroot+'js/ckeditor/ckfinder/ckfinder.html?type=Flash',
-		filebrowserUploadUrl 		: webroot+'js/ckeditor/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Files',
 		filebrowserImageUploadUrl 	: webroot+'js/ckeditor/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Images',
-		filebrowserFlashUploadUrl 	: webroot+'js/ckeditor/ckfinder/core/connector/php/connector.php?command=QuickUpload&type=Flash'
+		width : '700'
+		
 	};
 
-	$('#NewslettersqueueEmailbody').ckeditor(configContent);
 
+	$('#NewslettersqueueEmailbody').ckeditor(configContent);
+	
 	/* Chosen Select Box Plugin */
-	/*if($.fn.chosen) {
+	if($.fn.chosen) {
 		$('select.chzn-select').chosen();
-	}*/
+	}
 	
 	/*var sufixoObjGal = '-attach';
 	$('#uploadify'+sufixoObjGal).uploadify({

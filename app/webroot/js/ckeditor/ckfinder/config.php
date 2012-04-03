@@ -63,11 +63,11 @@ ATTENTION: The trailing slash is required.
 */
 //$baseUrl = '/ckfinder/userfiles/';
 
-$baseUrl = 'http://127.0.0.1/aipdes/files/filesfckeditor/';
-$baseDir = "D:/www/aipdes/app/webroot/files/filesfckeditor/";
+$baseUrl = 'http://127.0.0.1/newsletter/files/filesfckeditor/';
+$baseDir = "D:/www/newsletter/app/webroot/files/filesfckeditor/";
 
-//$baseUrl = 'http://profissionaldobrasil.com.br/aipdes/files/filesfckeditor/';
-//$baseDir = '/home/pandolphi/public_html/aipdes/files/filesfckeditor/';
+//$baseUrl = 'http://profissionaldobrasil.com.br/newsletter/files/filesfckeditor/';
+//$baseDir = '/home/pandolphi/public_html/newsletter/files/filesfckeditor/';
 
 /*
 $baseDir : the path to the local directory (in the server) which points to the
@@ -111,8 +111,10 @@ Set the maximum size of uploaded images. If an uploaded image is larger, it
 gets scaled down proportionally. Set to 0 to disable this feature.
 */
 $config['Images'] = Array(
-		'maxWidth' => 1600,
-		'maxHeight' => 1200,
+		// 'maxWidth' => 1600,
+		// 'maxHeight' => 1200,
+		'maxWidth' => 640,
+		'maxHeight' => 3200,
 		'quality' => 80);
 
 /*

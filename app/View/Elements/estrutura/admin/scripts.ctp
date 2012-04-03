@@ -6,13 +6,14 @@
 	$scripts = isset($scripts) ? $scripts : array(
 		'jquery-1.7.1.min',
 		// 'jquery.mousewheel-min',
-		'admin/jquery-ui',
-		'admin/jquery.ui.touch-punch.min', 
+		// 'admin/jquery-ui',
+		'admin/jquery-ui-1.8.18.custom.min'
+		// 'admin/jquery.ui.touch-punch.min', 
 
 		//Plugin Scripts
-		'plugins/placeholder/jquery.placeholder-min',
+		// 'plugins/placeholder/jquery.placeholder-min',
 		// 'plugins/swfobject',
-		'admin/mws' // Core script
+		// 'admin/mws' // Core script
 	);
 
 	if(isset($js_for_layout) && !empty($js_for_layout)){

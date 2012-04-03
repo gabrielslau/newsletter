@@ -26,7 +26,15 @@
 		'admin/core/responsive',
 
 		'admin/icons/24x24',
+		// 'admin/jui/jquery-ui-1.8.custom.min',
 		'admin/jui/jquery.ui',
+		
+		// "admin/jui/styles/jquery.ui.base",
+		// "admin/jui/styles/jquery.ui.theme",
+		
+
+
+
 		'admin/mws.theme'  // Theme Stylesheet
 	);
 
@@ -42,12 +50,19 @@
 		// echo '<!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->';
 	}
 
-	foreach($estilos as $e=>$estilo) $estilos[$e] = $estilo.'.css';
+	if(count($estilos)>15){
+		$estilos = array_chunk($estilos, 15); // Separa os estilos em "pacotes" de 15 em 15
+		foreach($estilos as $estilo):
+			echo $this->Minify->css($estilo);
+		endforeach;
+	}else echo $this->Minify->css($estilos);
+
+	/*foreach($estilos as $e=>$estilo) $estilos[$e] = $estilo.'.css';
 	
 	$this->AssetCompress->addCss($estilos);
-	echo $this->AssetCompress->includeCss();
+	echo $this->AssetCompress->includeCss();*/
 	
 	if(isset($cssExternal_for_layout) && !empty($cssExternal_for_layout)){
-		echo $this->Html->css($cssExternal_for_layout); // Carrega os scripts externos
+		echo $this->Html->css($cssExternal_for_layout); // Carrega os estilos externos
 	}
 ?> 

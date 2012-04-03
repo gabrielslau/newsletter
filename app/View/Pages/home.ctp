@@ -5,11 +5,14 @@
     <div class="mws-panel-body">
     	<div class="mws-panel-content">Utilize o menu ao lado para escolher a operação</div>
 
+        <!-- <div id="NewslettersqueuePublishDate">.</div> -->
 
         <!-- <ul class="mws-summary"> -->
         <?php 
 
-            print_r(AuthComponent::user());
+            // echo $this->set( 'js_for_layout', array('View/pages/gerencia_add'));
+
+            // print_r(AuthComponent::user());
 
 
         	// if(!empty($allPages)){

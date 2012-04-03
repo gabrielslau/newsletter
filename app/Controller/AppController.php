@@ -12,7 +12,7 @@ App::uses('Controller', 'Controller');
  * @link http://book.cakephp.org/view/957/The-App-Controller
  */
 class AppController extends Controller {
-	var $helpers = array('Html', 'Text', 'Form', 'Js','Session','Minify','AssetCompress.AssetCompress');
+	var $helpers = array('Html', 'Text','Time', 'Form', 'Js','Session','Minify','AssetCompress.AssetCompress');
 	var $components = array(
 		'Auth'=>array(
 			'loginAction' => array(
