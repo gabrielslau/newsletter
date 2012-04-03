@@ -63,11 +63,13 @@ ATTENTION: The trailing slash is required.
 */
 //$baseUrl = '/ckfinder/userfiles/';
 
-$baseUrl = 'http://127.0.0.1/newsletter/files/filesfckeditor/';
-$baseDir = "D:/www/newsletter/app/webroot/files/filesfckeditor/";
 
-//$baseUrl = 'http://profissionaldobrasil.com.br/newsletter/files/filesfckeditor/';
-//$baseDir = '/home/pandolphi/public_html/newsletter/files/filesfckeditor/';
+
+/*$baseUrl = 'http://127.0.0.1/newsletter/files/filesfckeditor/';
+$baseDir = "D:/www/newsletter/app/webroot/files/filesfckeditor/";*/
+
+$baseUrl = 'http://newsletter.profissionaldobrasil.com.br/files/filesfckeditor/';
+$baseDir = '/home/pandolphi/public_html/newsletter/files/filesfckeditor/';
 
 /*
 $baseDir : the path to the local directory (in the server) which points to the
