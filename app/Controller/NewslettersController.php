@@ -7,7 +7,11 @@ App::uses('AppController', 'Controller');
  */
 class NewslettersController extends AppController {
 
+	public function beforeFilter(){
+		
+		$this->Auth->allowedActions = array('view'); //Ações permitidas se o usuário não estiver logado
 
+	}
 /**
  * index method
  *
@@ -32,13 +36,20 @@ class NewslettersController extends AppController {
  */
 	public function view($id = null) {
 		$this->loadModel('Newslettersqueue');
-		$this->layout = 'Emails'.DS.'html'.DS.'newsletter_viverturismo';
+
 
 		$this->Newslettersqueue->id = $id;
 		if (!$this->Newslettersqueue->exists()) {
 			throw new NotFoundException(__('Invalid newsletter'));
 		}
-		$this->set('newsletter', $this->Newslettersqueue->read(null, $id));
+
+		$newsletter = $this->Newslettersqueue->read(null, $id);
+
+		// print_r($newsletter);exit();
+
+		$this->layout = 'Emails'.DS.'html'.DS.'newsletter_'.$newsletter['Newslettersuser']['username'];
+
+		$this->set(compact('newsletter'));
 	}
 
 /**
