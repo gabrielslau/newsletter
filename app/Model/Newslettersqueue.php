@@ -117,4 +117,21 @@ class Newslettersqueue extends AppModel {
 		)
 	);
 
+/**
+ * Callbacks
+ *
+ * @var array
+ */
+	function afterFind($results) {
+		return array_to_utf8($results);
+	}
+
+	function beforeSave($options) {
+		if (!empty($this->data)){
+			// $this->data = array_to_utf8($this->data);
+			$this->data['Newslettersqueue'] = array_to_utf8($this->data['Newslettersqueue'],true);
+		}
+		return true;
+	}
+
 }//end Model
