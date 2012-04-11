@@ -7,11 +7,133 @@ App::uses('AppController', 'Controller');
  */
 class NewslettersController extends AppController {
 
+	public $helper = array('Time');
+	public $components = array('Newsletterdispatch');
+
 	public function beforeFilter(){
 		
-		$this->Auth->allowedActions = array('view'); //Ações permitidas se o usuário não estiver logado
+		$this->Auth->allowedActions = array('view','enviar_agendadas_simples','newsletter_dispatch'); //Ações permitidas se o usuário não estiver logado
 
 	}
+
+
+	function newsletter_dispatch(){
+		$this->autoRender = false;
+		$this->layout = 'ajax';
+		$this->Newsletterdispatch->send();
+
+		/*if( $this->Newsletterdispatch->sended ){
+			echo $this->Newsletterdispatch->getLog();
+		}else echo $this->Newsletterdispatch->getError();*/
+	}
+
+
+
+	function enviar_agendadas_simples() {
+		
+		$this->loadModel('Newslettersemail');
+        $this->loadModel('Newslettersgroup');
+        $this->loadModel('Newslettersqueue');
+        $this->loadModel('Newsletterslog');
+
+        $max_sent_per_hour = 500;     // Máximo de emails enviados por vez
+
+
+
+
+
+        /**
+         * Verifica se há alguma newsletter agendada para hoje
+        */
+        	// TODO: Fazer a verificação a nível de hora e minuto
+
+        $this->Newslettersqueue->Behaviors->attach('Containable');
+        $Newslettersqueue = $this->Newslettersqueue->find('first', array(
+        	'conditions'=>array(
+        		"`status` = '0'",
+        		"CAST(Newslettersqueue.data_envio AS DATE) = CAST( NOW() AS DATE )"
+        	),
+        	'contain'=>array(
+        		'Newslettersuser',
+        		'Newslettersgroup'=>array(
+        			'Newslettersemail'=>array(
+        				'conditions'=>array("Newslettersemail.status = '0'"),
+        				'limit'=>$max_sent_per_hour
+        			)
+        		)
+        	)
+        ));
+
+        // $log = $this->Newslettersqueue->getDataSource()->getLog();debug($log);exit;
+
+        // print_r($Newslettersqueue);exit();
+
+        $lista_de_destinatarios = array();
+
+        /**
+         * Procura os emails dos grupos e monta uma lista de emails únicos para enviar
+        */
+        foreach ($Newslettersqueue['Newslettersgroup'] as $group) {
+        	foreach ($group['Newslettersemail'] as $email) {
+        		if( !in_array_r($email['email'], $lista_de_destinatarios) )
+        			$lista_de_destinatarios[] = array(
+        				'id' => $email['id'],
+        				'nome' => $email['nome'],
+        				'email' => $email['email']
+        			);
+        	}
+        }
+        // print_r($lista_de_destinatarios);exit();
+
+        /**
+         * Manda o email para a lista de emails selecionados
+        */
+
+        App::uses('CakeEmail', 'Network/Email');
+        foreach ($lista_de_destinatarios as $email) {
+        	
+			$email = new CakeEmail('smtp');
+			$email->to($email['email'])
+			// ->replyTo(array($email['email']=>$email['email']))
+			->from(array(MAIL_REMETENTE => MAIL_REMETENTENAME))
+			->template('newsletter', 'Emails'.DS.'html'.DS.'newsletter_'.$Newslettersqueue['Newslettersuser']['username'])
+			->emailFormat('html')
+			->subject( $Newslettersqueue['Newslettersqueue']['subject'] )
+			->viewVars(
+				array(
+					'message' => $Newslettersqueue['Newslettersqueue']['emailbody'],
+				)
+			);
+
+			if(!$email->send()){
+				CakeLog::write("debug", "Email de ".$Newslettersqueue['Newslettersuser']['nome']." enviado para ".$email['email']." na Newslettersqueue # ".$Newslettersqueue['Newslettersqueue']['id']." falhou.");
+			}else{
+				// A newsletter foi enviada, então atualiza o ID
+				$this->Newslettersemail->id = $email['id'];
+				$this->Newslettersemail->saveField('status',true);
+
+
+
+			}
+        }
+
+
+
+
+		$this->Newsletter->tipo_news = 'agendada';
+		$this->Newsletter->send();
+		if($this->Newsletter->sended){echo $this->Newsletter->getLog();}
+		else{echo $this->Newsletter->getError();}
+
+
+		exit;
+
+
+		$this->set('newslettersagendadas', $this->paginate());
+	}
+
+
+
 /**
  * index method
  *
@@ -86,9 +208,9 @@ class NewslettersController extends AppController {
 					$this->setAlert(__('The newsletter could not be saved. Please, try again.'),false);
 				}
 			}
-			else{
+			/*else{
 				print_r($this->Newslettersqueue->invalidFields());exit();
-			}
+			}*/
 		}
 
 		$this->loadModel('Newslettersgroup');

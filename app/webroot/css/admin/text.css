@@ -84,3 +84,57 @@ fieldset,
 figure {
   margin-bottom: 20px;
 }
+
+
+
+/*
+** Highlights
+*/
+.hg-yellow{
+  background:#FFF9DB;
+  border:1px solid #F3D97F;
+  border-radius:3px;
+  padding:2px 4px;
+  text-shadow: 0px 1px #fff;
+  display:inline-block;
+}
+
+.hg-red{
+  background:#F2DECD;
+  border:1px solid #E9C8AE;
+  border-radius:3px;
+  padding:2px 4px;
+  text-shadow: 0px 1px #fff;
+  display:inline-block;
+}
+
+.hg-blue{
+  background:#CDDFF2;
+  border:1px solid #AECDE9;
+  border-radius:3px;
+  padding:2px 4px;
+  display:inline-block;
+  text-shadow: 0px 1px #fff;}
+
+.hg-green{
+  background:#E1F2CD;
+  border:1px solid #CFE9AE;
+  border-radius:3px;
+  display:inline-block;
+  padding:2px 4px;}
+
+.hg-purple{
+  background:#E4CDF2;
+  border:1px solid #D4AEE9;
+  border-radius:3px;
+  padding:2px 4px;
+  display:inline-block;
+  text-shadow: 0px 1px #fff;}
+
+.hg-gray{
+  background:#EAEAEA;
+  border:1px solid #C6C6C6;
+  border-radius:3px;
+  text-shadow: 0px 1px #fff;
+  display:inline-block;
+  padding:2px 4px;}

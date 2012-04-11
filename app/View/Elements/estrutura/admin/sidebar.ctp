@@ -32,6 +32,27 @@
                 </ul>
             </li>
 
+            <!-- <li>
+                <a href="#" class="mws-i-24 i-create">Grupos de emails</a>
+                <ul class="closed">
+                    <?php 
+                       /* echo '<li>'.$this->Html->link('Adicionar novo', array('controller'=>'newslettersgroups','action' => 'add'),array('class'=>'mws-i-24 i-pencil')).'</li>';
+                        echo '<li>'.$this->Html->link('Ver todos', array('controller'=>'newslettersgroups','action' => 'index'),array('class'=>'mws-i-24 i-list')).'</li>';*/
+                    ?>
+                </ul>
+            </li> -->
+
+            <li>
+                <?php echo $this->Html->link('Emails', array('controller'=>'newslettersemails','action' => 'index'),array('class'=>'mws-i-24 i-list')) ?>
+                <!-- <a href="#" class="mws-i-24 i-create">Emails</a> -->
+                <!-- <ul class="closed"> -->
+                    <?php 
+                        // echo '<li>'.$this->Html->link('Adicionar novo', array('controller'=>'newslettersemails','action' => 'add'),array('class'=>'mws-i-24 i-pencil')).'</li>';
+                        // echo '<li>'.$this->Html->link('Ver todos', array('controller'=>'newslettersemails','action' => 'index'),array('class'=>'mws-i-24 i-list')).'</li>';
+                    ?>
+                <!-- </ul> -->
+            </li>
+
         </ul>
     </div>            
 </div>

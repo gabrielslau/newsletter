@@ -1,0 +1,3 @@
+[submodule "app/Plugin/cuploadify"]
+	path = app/Plugin/cuploadify
+	url = git://github.com/achan/cuploadify.git

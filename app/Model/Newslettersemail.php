@@ -12,12 +12,15 @@ class Newslettersemail extends AppModel {
  * @var string
  */
 	public $displayField = 'email';
+
+	public $actsAs = array('HabtmCounterCache.HabtmCounterCache');
+
 /**
  * Validation rules
  *
  * @var array
  */
-	public $validate = array(
+	public $validateCadastroEmail = array(
 		'newslettersgroup_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
@@ -31,17 +34,25 @@ class Newslettersemail extends AppModel {
 		'nome' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
+				'message' => 'Informe um nome',
 				//'allowEmpty' => false,
-				//'required' => false,
+				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 		'email' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				'message' => 'Informe um email',
+				//'allowEmpty' => false,
+				'required' => true,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
 			'email' => array(
 				'rule' => array('email'),
-				//'message' => 'Your custom message here',
+				'message' => 'Insira um email válido',
 				//'allowEmpty' => false,
 				//'required' => false,
 				//'last' => false, // Stop validation after this rule
@@ -57,7 +68,7 @@ class Newslettersemail extends AppModel {
  *
  * @var array
  */
-	public $belongsTo = array(
+	/*public $belongsTo = array(
 		'Newslettersgroup' => array(
 			'className' => 'Newslettersgroup',
 			'foreignKey' => 'newslettersgroup_id',
@@ -65,5 +76,35 @@ class Newslettersemail extends AppModel {
 			'fields' => '',
 			'order' => ''
 		)
+	);*/
+
+
+	public $hasAndBelongsToMany = array(
+		'Newslettersgroup' => array(
+			'className' => 'Newslettersgroup',
+			'joinTable' => 'newslettersemails_newslettersgroups',
+			'foreignKey' => 'newslettersemail_id',
+			'associationForeignKey' => 'newslettersgroup_id',
+			'counterCache' => true
+			// 'unique' => true
+		)
 	);
-}
+
+/**
+ * Callbacks
+ *
+ * @var array
+ */
+	function afterFind($results) {
+		return array_to_utf8($results);
+	}
+
+	function beforeSave($options) {
+		if (!empty($this->data)){
+			// $this->data = array_to_utf8($this->data);
+			$this->data['Newslettersemail'] = array_to_utf8($this->data['Newslettersemail'],true);
+		}
+		return true;
+	}
+
+}//end Model

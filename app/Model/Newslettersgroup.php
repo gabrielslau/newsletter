@@ -37,7 +37,7 @@ class Newslettersgroup extends AppModel {
  *
  * @var array
  */
-	public $hasMany = array(
+	/*public $hasMany = array(
 		'Newslettersemail' => array(
 			'className' => 'Newslettersemail',
 			'foreignKey' => 'newslettersgroup_id',
@@ -51,6 +51,41 @@ class Newslettersgroup extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		)
+	);*/
+
+
+	public $hasAndBelongsToMany = array(
+		'Newslettersemail' => array(
+			'className' => 'Newslettersemail',
+			'joinTable' => 'newslettersemails_newslettersgroups',
+			'foreignKey' => 'newslettersgroup_id',
+			'associationForeignKey' => 'newslettersemail_id'
+			// 'unique' => true
+		),
+		'Newslettersqueue' => array(
+			'className' => 'Newslettersqueue',
+			'joinTable' => 'newslettersqueues_newslettersgroups',
+			'foreignKey' => 'newslettersgroup_id',
+			'associationForeignKey' => 'newslettersqueue_id'
+			// 'unique' => true
+		)
 	);
 
-}
+/**
+ * Callbacks
+ *
+ * @var array
+ */
+	function afterFind($results) {
+		return array_to_utf8($results);
+	}
+
+	function beforeSave($options) {
+		if (!empty($this->data)){
+			// $this->data = array_to_utf8($this->data);
+			$this->data['Newslettersgroup'] = array_to_utf8($this->data['Newslettersgroup'],true);
+		}
+		return true;
+	}
+
+}//end Model

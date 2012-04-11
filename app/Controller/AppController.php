@@ -39,6 +39,15 @@ class AppController extends Controller {
 	);
 
 	public function beforeFilter(){
+		$this->Session->write('SessionID',session_id()); // Grava o ID da sessão
+		$this->set('SessionID', session_id()); // Grava o ID da sessão
+
+		// this is not necessary if you're using the cuploadify component
+		if (isset($_REQUEST["session_id"])) {
+		    $session_id = $_REQUEST["session_id"];
+		    $this->Session->id($session_id);
+		}
+
 		/*if (isset($this->params['prefix'])) {
 
 			// $this->set('Siteconfigs', $this->Siteconfig->find('all')); // Configurações do site

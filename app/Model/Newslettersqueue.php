@@ -12,6 +12,7 @@ class Newslettersqueue extends AppModel {
  * @var string
  */
 	public $displayField = 'subject';
+	public $actAs = array('Containable');
 
 /**
  * Validation rules
@@ -101,35 +102,19 @@ class Newslettersqueue extends AppModel {
 		)
 	);
 
-/*
-** Função para validação personalizada
-** @link http://snook.ca/archives/cakephp/multiple_validation_sets_cakephp
-*/
-	function validates($options = array()) {
-	    // copy the data over from a custom var, otherwise
-	    $actionSet = 'validate' . Inflector::camelize(Router::getParam('action'));
-	    if (isset($this->validationSet)) {
-	        $temp = $this->validate;
-	        $param = 'validate' . $this->validationSet;
-	        $this->validate = $this->{$param};
-	    } elseif (isset($this->{$actionSet})) {
-	        $temp = $this->validate;
-	        $param = $actionSet;
-	        $this->validate = $this->{$param};
-	    } 
-
-	    $errors = $this->invalidFields($options);
-
-	    // copy it back
-	    if (isset($temp)) {
-	        $this->validate = $temp;
-	        unset($this->validationSet);
-	    }
-	    
-	    if (is_array($errors)) {
-	        return count($errors) === 0;
-	    }
-	    return $errors;
-	}
+/**
+ * hasAndBelongsToMany associations
+ *
+ * @var array
+ */
+	public $hasAndBelongsToMany = array(
+		'Newslettersgroup' => array(
+			'className' => 'Newslettersgroup',
+			'joinTable' => 'newslettersqueues_newslettersgroups',
+			'foreignKey' => 'newslettersqueue_id',
+			'associationForeignKey' => 'newslettersgroup_id'
+			// 'unique' => true
+		)
+	);
 
 }//end Model

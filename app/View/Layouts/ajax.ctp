@@ -1,0 +1,1 @@
+<?php echo isset($content_for_layout) ? $content_for_layout : '';?>

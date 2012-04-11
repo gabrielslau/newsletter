@@ -1,0 +1,69 @@
+@import url("../../site/bootstrap.less");
+/*
+Uploadify v2.1.4
+Release Date: November 8, 2010
+*/
+
+
+
+/*.uploadifyProgress {
+	background-color: #E5E5E5;
+	margin-top: 10px;
+	width: 100%;
+}
+.uploadifyProgressBar {
+	background-color: #0099FF;
+	height: 3px;
+	width: 1px;
+}*/
+
+
+.uploadifyQueueItem {
+	border: 2px solid #E5E5E5;
+	background-color: #F5F5F5;
+	font: 11px Verdana, Geneva, sans-serif;
+	margin-top: 5px;
+	padding: 10px;
+	width: 350px;
+	.rounded-corners(6px);
+}
+.uploadifySucess {border: 2px solid #c2fbbc !important;background-color: #e0fddd !important;}
+.uploadifyError {border: 2px solid #FBCBBC !important;background-color: #FDE5DD !important;}
+
+.uploadifyQueueItem .cancel {float: right}
+.uploadifyQueue .completed {
+	background-color: #E5E5E5;
+}
+.uploadifyProgress {background-color: #FFFFFF;border-top: 1px solid #808080;border-left: 1px solid #808080;border-right: 1px solid #C5C5C5;border-bottom: 1px solid #C5C5C5;margin-top: 10px;width: 100%}
+.uploadifyProgressBar {background-color: #0099FF;width: 1px;height: 3px}
+
+.upload-menu{height:30px;margin-bottom:5px;padding:5px;/*background:#efefef;*/border:1px solid #dfdfdf;.rounded-corners(6px);}
+	.upload-menu .upload_actions a, .upload-menu .upload_actions span{display:inline-block;background:#dfdfdf;color:#333;font-weight:bold;height:22px;padding:8px 8px 0;text-align:center;text-shadow:1px 1px 0 #fff;}
+.upload-menu .upload_actions a:hover, .upload-menu .upload_actions span:hover{background:#67b021;color:#fff;text-decoration:none;text-shadow:1px 1px 0 #333;cursor:pointer}
+
+/*#upload-menu .buttom_choice,#upload-menu .upload_actions{float:left}*/
+.upload-menu .buttom_choice{width:150px;float:left}
+.upload-menu .upload_actions{width:300px;float:right;text-align:right}
+
+
+
+/*
+** Box de upload de imagens
+*/
+
+#capadiv{}
+#capadiv .inside{border:1px solid #ccc;padding:5px 10px;background:#fff}
+#capadiv .preview{width:150px;float:left;overflow:hidden;}
+	#capadiv .preview img{padding:10px;border:1px dashed #dfdfdf;background:#fff;margin:20px 0;width:100px;}
+#capadiv .boxupload{width:70%;float:left;padding:20px 0 0}
+
+
+.temporary-imgs{padding-top:25px}
+.temporary-imgs .content_inside div{padding:2px;background:#fff;border:1px dashed #bbb;margin:0 5px 5px 0;width:135px;/*height:135px;*/overflow:hidden;display:block;float:left;-moz-box-shadow:0 5px 5px #E5E5E5;-webkit-box-shadow:0 5px 5px #E5E5E5;box-shadow:0 5px 5px #E5E5E5;}
+.temporary-imgs .content_inside div:hover{border:1px solid #999}
+.temporary-imgs .content_inside p{margin-bottom:5px}
+.temporary-imgs .content_inside p select{width:100%;font-size:10px}
+.temporary-imgs .content_inside p label{font-size:xx-small}
+.temporary-imgs img{width:132px;height:92px;padding:5px 0;background:#fff;margin-bottom:5px}
+.temporary-imgs .title{height:25px;overflow:hidden;border-top:1px dashed #dfdfdf;background:#f4f4f4}
+.temporary-imgs .title input{background:transparent;border:0 none;font-size:.9em;line-height:1.1em;padding:0}

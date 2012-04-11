@@ -28,7 +28,7 @@ class UsersController extends AppController {
 	            
 	            return $this->redirect($this->Auth->redirect());
 	        } else {
-	            $this->Session->setFlash(__('Username or password is incorrect'), 'default', array(), 'auth');
+	            $this->Session->setFlash(__('O nome de usuário ou a senha inserido está incorreto.'), 'default', array(), 'auth');
 	        }
 	    }
 

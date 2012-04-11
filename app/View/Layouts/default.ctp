@@ -37,6 +37,7 @@
 	$jsExternal_for_layout = isset($jsExternal_for_layout) ? $jsExternal_for_layout : array();
 	echo $this->element('estrutura/admin/scripts',array('js_for_layout'=>$js_for_layout,'jsExternal_for_layout'=>$jsExternal_for_layout,'asset_js_for_layout'=>$asset_js_for_layout));
 	echo isset($scripts_for_layout) ? $scripts_for_layout : '';
+	echo $this->Js->writeBuffer(); // Write cached scripts
 	echo $this->element('sql_dump');
 ?>
 </body>

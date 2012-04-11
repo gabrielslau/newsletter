@@ -24,7 +24,7 @@
             <div id="mws-user-functions">
                 <div id="mws-username">
                     Olá, <?php 
-                    // echo AuthComponent::user('nome'); 
+                    echo AuthComponent::user('nome'); 
                     ?>
                 </div>
                 <ul>
