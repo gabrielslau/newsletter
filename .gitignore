@@ -1,10 +1,11 @@
 app/Config
-
+app/tmp
 app/Test
 app/webroot/index.php
 app/webroot/js/ckeditor/ckfinder/config.php
+app/webroot/files/cache/
+app/webroot/files/tmp/
 
-app/tmp
 newsletter.sublime-project
 newsletter.sublime-workspace
-filesfckeditor/*
+filesfckeditor/
