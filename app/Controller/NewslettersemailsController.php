@@ -39,7 +39,7 @@ class NewslettersemailsController extends AppController {
  * @return void
  */
 	public function import($dados=null){
-		if($this->request->is('ajax') || 1==1){
+		if($this->request->is('ajax')){
 			App::uses('File', 'Utility');
 
 			$file = new SplFileObject($this->request->data['path'].$this->request->data['filename']);
@@ -56,12 +56,6 @@ class NewslettersemailsController extends AppController {
 
 			$this->loadModel('Newslettersemail');
 			$newslettersemails_list = $this->Newslettersemail->find('list');
-
-			
-			// if( in_array('jmm3000@ig.com.br', $newslettersemails_list) ) exit('POIAA');
-			// print_r($newslettersemails_list);exit();
-			
-
 			$Newslettersemail = array(); // Guarda os dados dos emails e seus grupos que serão cadastrados/atualizados no sistema
 
 			$erros = $emails_incluidos = array(); $numlinha = 1;
@@ -72,25 +66,25 @@ class NewslettersemailsController extends AppController {
 
 		            // print_r($line);exit();
 
-	             if( isset($line[3])){
-		            if( !validarEmail($line[3]) ) {
+	             if( isset($line[0])){
+		            if( !validarEmail($line[0]) ) {
 						// Insere o registro de erro no arquivo		            	
-					    $fileErrors->append('O Email('.$line[3].'), não é válido');					    
-		            	$erros[] = 'O Email('.$line[3].'), não é válido'; // die("{" . $this->Json->encode(array('msg'=>$line[0],'status'=>'error')) . "}");
+					    $fileErrors->append('O Email('.$line[0].'), não é válido');					    
+		            	$erros[] = 'O Email('.$line[0].'), não é válido'; // die("{" . $this->Json->encode(array('msg'=>$line[0],'status'=>'error')) . "}");
 		            }
 		            else{
-	            		if( !in_array($line[3], $emails_incluidos) ){
-	            			$emails_incluidos[] = $line[3];
+	            		if( !in_array($line[0], $emails_incluidos) ){
+	            			$emails_incluidos[] = $line[0];
 
 		            		// Monta os dados do email a cadastrar
 		            		$Newslettersemail[$numlinha]['Newslettersemail'] = array(
-		            			'email' => strtolower($line[3]),
-		            			'nome' => ( empty($line[2]) ? $line[3] : $line[2] )
+		            			'email' => strtolower($line[0]),
+		            			'nome' => ( empty($line[1]) ? $line[0] : $line[1] )
 		            		);
 
 		            		// Se o email já estiver cadastrado, seta o ID para que apenas atualize esse registro
-		            		if( in_array($line[3], $newslettersemails_list) ){
-		            			$Newslettersemail[$numlinha]['Newslettersemail']['id'] = array_search($line[3], $newslettersemails_list);
+		            		if( in_array($line[0], $newslettersemails_list) ){
+		            			$Newslettersemail[$numlinha]['Newslettersemail']['id'] = array_search($line[0], $newslettersemails_list);
 		            		}
 
 		            		// Informa os grupos do email a cadastrar;
@@ -102,9 +96,6 @@ class NewslettersemailsController extends AppController {
 
 	            $numlinha++; // Numero de linhas do arquivo
 	        }//end while
-
-	        // if( !empty($Newslettersemail) ) {print_r($erros);exit();}
-	        // print_r($Newslettersemail);exit();
 
 	        if( empty($erros) ){
 	        	$fileErrors->delete(); // I am deleting this file
