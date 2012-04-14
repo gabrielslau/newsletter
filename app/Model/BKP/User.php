@@ -5,10 +5,14 @@ App::uses('AppModel', 'Model');
  *
  */
 class User extends AppModel {
-	var $name = 'User';
-	var $displayField = 'nome';
 
-
+	public $useTable = 'newslettersusers';
+/**
+ * Display field
+ *
+ * @var string
+ */
+	public $displayField = 'username';
 /**
  * Validation rules
  *
@@ -37,12 +41,15 @@ class User extends AppModel {
 		),
 	);
 
-	// As associações abaixo foram criadas com todas as chaves possíveis, então é possível remover as que não são necessárias
-
-	var $hasMany = array(
-		'Newsletter' => array(
-			'className' => 'Newsletter',
-			'foreignKey' => 'user_id',
+/**
+ * hasMany associations
+ *
+ * @var array
+ */
+	public $hasMany = array(
+		'Newslettersqueue' => array(
+			'className' => 'Newslettersqueue',
+			'foreignKey' => 'newslettersuser_id',
 			'dependent' => false,
 			'conditions' => '',
 			'fields' => '',
@@ -53,7 +60,6 @@ class User extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		)
-	);
+	);	
 
-}
-?>
+}//end Model

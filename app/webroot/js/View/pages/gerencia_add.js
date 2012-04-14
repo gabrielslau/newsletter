@@ -2,11 +2,8 @@
 	// var loadercontent = $('#loader-content');
 	var webroot = $('#webroot').val();
 	var ABS_PATH = $('#ABS_PATH').val();
-	// var SessionID = $('#SessionID').val();
-	var working = false;
-	var AnexosAdicionados = 0;
 
-	$("#NewslettersqueueDataEnvio").datetimepicker({ 
+	$("#NewsletterDateSend").datetimepicker({ 
 		minDate: 0, 
 		maxDate: "+1M +10D",
 		dateFormat : 'dd/mm/yy'
@@ -23,7 +20,7 @@
 	};
 
 
-	$('#NewslettersqueueEmailbody').ckeditor(configContent);
+	$('#NewsletterEmailbody').ckeditor(configContent);
 	
 	/* Chosen Select Box Plugin */
 	if($.fn.chosen) {

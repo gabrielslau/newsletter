@@ -1,7 +1,7 @@
 <?php
-class NewslettersGroup extends AppModel {
-	var $name = 'NewslettersGroup';
-	var $primaryKey = 'newsletter_id';
+class Queue extends AppModel {
+	var $name = 'Queue';
+	var $displayField = 'newsletter_id';
 	var $validate = array(
 		'newsletter_id' => array(
 			'numeric' => array(
@@ -13,7 +13,7 @@ class NewslettersGroup extends AppModel {
 				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
 			),
 		),
-		'group_id' => array(
+		'email_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Sua mensagem de validação aqui',
@@ -34,9 +34,9 @@ class NewslettersGroup extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),
-		'Group' => array(
-			'className' => 'Group',
-			'foreignKey' => 'group_id',
+		'Email' => array(
+			'className' => 'Email',
+			'foreignKey' => 'email_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''

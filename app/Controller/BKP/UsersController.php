@@ -7,9 +7,8 @@ App::uses('AppController', 'Controller');
  */
 class UsersController extends AppController {
 
-	var $name = 'Users';
 
-	
+
 /**
  * login method
  *
@@ -80,60 +79,90 @@ class UsersController extends AppController {
 	    $this->redirect($this->Auth->logout());
 	}
 
-	function index() {
+/**
+ * index method
+ *
+ * @return void
+ */
+	public function index() {
 		$this->User->recursive = 0;
 		$this->set('users', $this->paginate());
 	}
 
-	function view($id = null) {
-		if (!$id) {
-			$this->Session->setFlash(sprintf(__('%s inválido.', true), 'User'));
-			$this->redirect(array('action' => 'index'));
+/**
+ * view method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function view($id = null) {
+		$this->User->id = $id;
+		if (!$this->User->exists()) {
+			throw new NotFoundException(__('Invalid user'));
 		}
 		$this->set('user', $this->User->read(null, $id));
 	}
 
-	function add() {
-		if (!empty($this->data)) {
+/**
+ * add method
+ *
+ * @return void
+ */
+	public function add() {
+		if ($this->request->is('post')) {
 			$this->User->create();
-			if ($this->User->save($this->data)) {
-				$this->Session->setFlash(sprintf(__('O %s foi salvo.', true), 'user'));
+			if ($this->User->save($this->request->data)) {
+				$this->Session->setFlash(__('The user has been saved'));
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(sprintf(__('O %s não pode ser salvo. Por favor, tente novamente.', true), 'user'));
+				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
 		}
 	}
 
-	function edit($id = null) {
-		if (!$id && empty($this->data)) {
-			$this->Session->setFlash(sprintf(__('%s inválido.', true), 'User'));
-			$this->redirect(array('action' => 'index'));
+/**
+ * edit method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function edit($id = null) {
+		$this->User->id = $id;
+		if (!$this->User->exists()) {
+			throw new NotFoundException(__('Invalid user'));
 		}
-		if (!empty($this->data)) {
-			if ($this->User->save($this->data)) {
-				$this->Session->setFlash(sprintf(__('O %s foi salvo.', true), 'user'));
+		if ($this->request->is('post') || $this->request->is('put')) {
+			if ($this->User->save($this->request->data)) {
+				$this->Session->setFlash(__('The user has been saved'));
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(sprintf(__('O %s não pode ser salvo. Por favor, tente novamente.', true), 'user'));
+				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
 			}
-		}
-		if (empty($this->data)) {
-			$this->data = $this->User->read(null, $id);
+		} else {
+			$this->request->data = $this->User->read(null, $id);
 		}
 	}
 
-	function delete($id = null) {
-		if (!$id) {
-			$this->Session->setFlash(sprintf(__('ID inválido para %s.', true), 'user'));
+/**
+ * delete method
+ *
+ * @param string $id
+ * @return void
+ */
+	public function delete($id = null) {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+		$this->User->id = $id;
+		if (!$this->User->exists()) {
+			throw new NotFoundException(__('Invalid user'));
+		}
+		if ($this->User->delete()) {
+			$this->Session->setFlash(__('User deleted'));
 			$this->redirect(array('action'=>'index'));
 		}
-		if ($this->User->delete($id)) {
-			$this->Session->setFlash(sprintf(__('%s excluído.', true), 'User'));
-			$this->redirect(array('action'=>'index'));
-		}
-		$this->Session->setFlash(sprintf(__('%s não pode ser excluído.', true), 'User'));
+		$this->Session->setFlash(__('User was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
-}
-?>
+
+}//end Controller

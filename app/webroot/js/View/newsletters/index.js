@@ -6,20 +6,20 @@
 
 	/* Chosen Select Box Plugin */
 	if($.fn.chosen) {
-			$('select.chzn-select').chosen();
-		}
+		$('select.chzn-select').chosen();
+	}
 
 
 	$('#ImportEmailPopUp').click(function(e){
 		e.preventDefault();
 		
-		$('.PopUpImport').show();
+		$('.PopUpImport').toggle();
 	});
 		
 		var sufixoObjGal = '-galeria', jquploadifyGal = $('#uploadify'+sufixoObjGal);
 		jquploadifyGal.uploadify({
 			'uploader'			: webroot+'js/plugins/uploadify/uploadify.swf',
-			'script'			: webroot+'newslettersemails/temp_upload_csv/'+ $('#SessionId').val(),
+			'script'			: webroot+'emails/temp_upload_csv/'+ $('#SessionId').val(),
 			'scriptData'  		: {'session_id' : $('#SessionId').val()},
 			'cancelImg'			: webroot+'js/plugins/uploadify/cancel.png',
 			'folder'			: webroot+'app/webroot/files/tmp/',
@@ -47,7 +47,7 @@
 
 				$.ajax({
 					type: "POST",
-					url: webroot+'newslettersemails/import',
+					url: webroot+'emails/import',
 					data : json  ,
 					cache: false,
 					dataType: "json",
@@ -79,14 +79,8 @@
 						}
 					},
 					error: function(jqXHR, textStatus, errorThrown){
-						// $.prompt.close(); // Fecha o prompt de confirmação e exibe mensagem de sucesso
-						alert('Houve um erro interno do sistema. Não foi possível importar os associados.');
-
-						$('#uploader_errors'+sufixoObjGal).removeClass('hidden').removeClass('loading').removeClass('success').addClass('error').html('jqXHR = '+ jqXHR + '; textStatus = '+textStatus+';  errorThrown = '+errorThrown);
-
-						console.log(jqXHR);
-						console.log(textStatus);
-						console.log(errorThrown);
+						$('#uploader_errors'+sufixoObjGal).removeClass('hidden').removeClass('loading').removeClass('success').addClass('error').html('Houve um erro interno do sistema. Não foi possível importar os associados.' );
+						// $('#uploader_errors'+sufixoObjGal).removeClass('hidden').removeClass('loading').removeClass('success').addClass('error').html('jqXHR = '+ jqXHR + '; textStatus = '+textStatus+';  errorThrown = '+errorThrown);
 					}
 				});//end ajax
 

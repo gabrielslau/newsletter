@@ -5,8 +5,8 @@
     
     	<!-- Logo Wrapper, images put within this wrapper will always be vertically centered -->
     	<div id="mws-logo-wrap">
-    		<?php echo $this->Html->image('admin/profissional-logo.gif',array('alt'=>'mws admin')) ?>
-		</div>
+            <?php echo $this->Html->image('admin/profissional-logo.gif',array('alt'=>'mws admin')) ?>
+        </div>
     </div>
     
     <!-- User Tools (notifications, logout, profile, change password) -->
@@ -15,9 +15,9 @@
         <!-- User Information and functions section -->
         <div id="mws-user-info" class="mws-inset">
         
-        	<!-- User Photo -->
-        	<div id="mws-user-photo">
-            	<img src="example/profile.jpg" alt="User Photo" />
+            <!-- User Photo -->
+            <div id="mws-user-photo">
+                <?php echo $this->Html->image('admin/core/userdefault-30.gif',array('alt'=>'Avatar')) ?>
             </div>
             
             <!-- Username and Functions -->

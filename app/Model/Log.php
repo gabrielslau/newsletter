@@ -1,19 +1,8 @@
 <?php
-class NewslettersGroup extends AppModel {
-	var $name = 'NewslettersGroup';
-	var $primaryKey = 'newsletter_id';
+class Log extends AppModel {
+	var $name = 'Log';
 	var $validate = array(
 		'newsletter_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
-				//'message' => 'Sua mensagem de validação aqui',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Para a validação após esta regra
-				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
-			),
-		),
-		'group_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Sua mensagem de validação aqui',
@@ -30,13 +19,6 @@ class NewslettersGroup extends AppModel {
 		'Newsletter' => array(
 			'className' => 'Newsletter',
 			'foreignKey' => 'newsletter_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		),
-		'Group' => array(
-			'className' => 'Group',
-			'foreignKey' => 'group_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''

@@ -1,9 +1,10 @@
 <?php
-class NewslettersGroup extends AppModel {
-	var $name = 'NewslettersGroup';
-	var $primaryKey = 'newsletter_id';
+class GroupsEmail extends AppModel {
+	var $name = 'GroupsEmail';
+	var $primaryKey = 'group_id';
+	var $displayField = 'group_id';
 	var $validate = array(
-		'newsletter_id' => array(
+		'group_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Sua mensagem de validação aqui',
@@ -13,7 +14,7 @@ class NewslettersGroup extends AppModel {
 				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
 			),
 		),
-		'group_id' => array(
+		'email_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Sua mensagem de validação aqui',
@@ -27,16 +28,16 @@ class NewslettersGroup extends AppModel {
 	// As associações abaixo foram criadas com todas as chaves possíveis, então é possível remover as que não são necessárias
 
 	var $belongsTo = array(
-		'Newsletter' => array(
-			'className' => 'Newsletter',
-			'foreignKey' => 'newsletter_id',
+		'Group' => array(
+			'className' => 'Group',
+			'foreignKey' => 'group_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
 		),
-		'Group' => array(
-			'className' => 'Group',
-			'foreignKey' => 'group_id',
+		'Email' => array(
+			'className' => 'Email',
+			'foreignKey' => 'email_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''

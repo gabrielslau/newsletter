@@ -2,9 +2,9 @@
 /**
  * Class Newsletterdispatch Component
  *
- * Classe para criacação e envio de newsletter
+ * Classe para envio de newsletter em massa
  * 
- * @version   0.1
+ * @version   2.0
  * @author    Gabriel (Okatsura) Lau <gabrielslau@yahoo.com.br>
  * @license   http://opensource.org/licenses/gpl-license.php GNU Public License
  * @copyright Gabriel (Okatsura) Lau
@@ -90,20 +90,28 @@ class NewsletterdispatchComponent extends Component {
     var $total_enviados;
 
     /**
-    * Guarda o número de remetentes cadastrados no sistema
-    * 
-    * @access public
-    * @var integer
+     * Guarda o número de emails cadastrados no sistema
+     * 
+     * @access public
+     * @var integer
     */
-    var $total_remetentes;
+    var $total_emails;
 
     /**
-    * Guarda o número de remetentes que faltam receber o informativo
-    * 
-    * @access public
-    * @var integer
+     * Guarda o número de emails que faltam receber o informativo
+     * 
+     * @access public
+     * @var integer
     */
-    var $total_remetentes_queue;
+    var $total_destinatarios;
+
+    /**
+     * Guarda os emails que faltam receber o informativo
+     * 
+     * @access public
+     * @var array
+    */
+    public $destinatarios;
 
     /**
      * Guarda o número de newsletters para enviar
@@ -208,61 +216,57 @@ class NewsletterdispatchComponent extends Component {
         $this->controller = $controller;
 
         // overiddable variables
-        $this->max_sent_per_hour = 300;     // Máximo de emails enviados por vez
-        //$this->sec = 10;                    // Tempo entre o envio de um pacote e outro (em segundos)
-        //$this->limitMail = 500;             // Limite de emails por hora
-        //$this->secLimitMail = 2400;         // Tempo de pausa por hora (40 minutos = 2400 segundos)
-        $this->id_enviada = null;           // ID do log de envios de newsletters do dia
-        $this->total_enviados = 0;          // Enviados até o momento
-        $this->total_remetentes = 0;        // Remetentes cadastrados no sistema
-        $this->total_remetentes_queue = 0;  // Remetentes que faltam receber o informativo
-        $this->total_queue = 0;             // Número de newsletters para enviar
+        $this->max_sent_per_hour = 400;            // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
+        //$this->sec             = 10;             // Tempo entre o envio de um pacote e outro (em segundos)
+        //$this->limitMail       = 500;            // Limite de emails por hora
+        //$this->secLimitMail    = 2400;           // Tempo de pausa por hora (40 minutos = 2400 segundos)
+        
+        $this->total_queue       = 0;              // Número de newsletters para enviar
+        $this->Newslettersqueue  = array(); // Lista de newsletters agendadas e seus Models relacionados
+        $this->destinatarios     = array(); // Lista de emails de quem falta receber a newsletter
 
-        $this->subject = '';                // Assunto do emaial
-        $this->email_body = '';             // Corpo da news
-        $this->tipo_news = 'agendada';      // Tipo da newsletter
-        $this->tipos_permitidos = array(
-            'diaria',
-            'semanal',
-            'mensal',
-            'agendada'
-        );                                  // Tipo da newsletter
-        $this->proceed = true;              // Se pode continuar com as operações ou não
-        $this->sended = true;               // Se foi enviada ou não
-        $this->data_atual = date('d/m/Y');  // Data de início da operação
-        $this->log = array();               // Registro de mensagens do sistema
-        $this->error = array();             // Registro de mensagens de erro do sistema
 
-        // $this->loadModel('Newslettersemail');
-        // $this->loadModel('Newslettersgroup');
-        // $this->loadModel('Newslettersqueue');
-        // $this->loadModel('Newsletterslog');
 
-        $this->Newslettersemail = ClassRegistry::init('Newslettersemail');
-        $this->Newslettersgroup = ClassRegistry::init('Newslettersgroup');
-        $this->Newslettersqueue = ClassRegistry::init('Newslettersqueue');
-        $this->Newsletterslog = ClassRegistry::init('Newsletterslog');
 
-        // $this->Newslettersemail = ClassRegistry::init('Newslettersusuario');
-        // $this->Newsletterslog = ClassRegistry::init('Newsletterslog');
-        // $this->Newslettersqueue = ClassRegistry::init('Newslettersqueue');
+        $this->id_enviada        = null;           // ID do log de envios de newsletters do dia
+
+        $this->total_enviados         = 0;              // Enviados até o momento
+        $this->total_emails       = 0;              // Remetentes cadastrados no sistema
+        $this->total_destinatarios = 0;              // Remetentes que faltam receber o informativo
+        
+        $this->subject                = '';             // Assunto do email
+        $this->email_body             = '';             // Corpo da news
+        
+        $this->proceed                = true;           // Se pode continuar com as operações ou não
+        $this->sended                 = true;           // Se foi enviada ou não
+        $this->data_atual             = date('d/m/Y');  // Data de início da operação
+        $this->log                    = array();        // Registro de mensagens do sistema
+        $this->error                  = array();        // Registro de mensagens de erro do sistema
+        
+        // Models a utilizar
+        $this->Newslettersemail       = ClassRegistry::init('Newslettersemail');
+        $this->Newslettersgroup       = ClassRegistry::init('Newslettersgroup');
+        // $this->Newslettersqueue       = ClassRegistry::init('Newslettersqueue');
+        $this->Newsletterslog         = ClassRegistry::init('Newsletterslog');
     }
 
 
     /**
-     * Envia a newsletter para os contatos cadastrados
+     * Envia a newsletter para os grupos de emails selecionados
      * 
      * @uses Newsletter::reset()
-     * @uses Newsletter::geraCorpoNews()
+     * @uses Newsletter::getNewslettersQueue()
      * @access public
      *
      * @return boolean : Enviou ou não?
      */
-    function send(){
+    public function send(){
+        $this->getNewslettersQueue();  // Newsletters na fila para enviar
+        $this->getDestinatarios();      // Lista de emails nos grupos selecionados que faltam receber a newsletter
+        
+
+
         $this->getTotalEnviadasHoje();
-        $this->getTotalRemetentesNaFila();
-        $this->getTotalRemetentes();    // Total de emails que faltam
-        $this->getTotalQueue();         // Total de newsletters na fila para enviar
 
         if(!in_array($this->tipo_news,$this->tipos_permitidos)){
             $this->proceed = $this->sended = false;
@@ -270,15 +274,15 @@ class NewsletterdispatchComponent extends Component {
             CakeLog::write("debug", "O tipo de newsletter selecionada está inválida");
         }
 
-        if($this->total_queue > 0 && $this->total_remetentes > 0 && $this->total_enviados < $this->total_remetentes && $this->proceed){
+        if($this->total_queue > 0 && $this->total_emails > 0 && $this->total_enviados < $this->total_emails && $this->proceed){
             $this->log[] = 'Pronto pra mandar a news';
             $this->log[] = 'ENVIADOS: '.$this->total_enviados;
-            $this->log[] = 'REMENTENTES: '.$this->total_remetentes;
+            $this->log[] = 'REMENTENTES: '.$this->total_emails;
             CakeLog::write("debug", 'Pronto pra mandar a news');
             CakeLog::write("debug", 'ENVIADOS: '.$this->total_enviados);
-            CakeLog::write("debug", 'REMENTENTES: '.$this->total_remetentes);
+            CakeLog::write("debug", 'REMENTENTES: '.$this->total_emails);
 
-            if($this->total_remetentes_queue > 0){
+            if($this->total_destinatarios > 0){
                 $remetentes = $this->Newslettersemail->find('all',array('conditions'=>array("`status` = '0'"),'limit'=>$this->max_sent_per_hour));
                 // $Newslettersqueue = $this->Newslettersqueue->find('first',array('conditions'=>array('`tipo`'=>$this->tipo_news,"`status` = '0'")));
 
@@ -377,15 +381,126 @@ class NewsletterdispatchComponent extends Component {
                     $this->id_newsagendada = $Newslettersqueue['Newslettersqueue']['id'];
                     $this->upCountNews($this->id_newsagendada,($this->total_enviados+$remetentesenviados));
                 }
-            }//end total_remetentes_queue > 0
+            }//end total_destinatarios > 0
         }
 
         //Reseta os remetentes após enviar tudo e marca a newsletter agendada como enviada
-        if($this->total_enviados >= $this->total_remetentes){
+        if($this->total_enviados >= $this->total_emails){
             $this->reset();
             $this->disabeNews($this->id_newsagendada);
         }
     }// end function send()
+
+    /**
+    * Seleciona alguma newsletter na fila de envio para o dia atual
+    * 
+    * Seleciona apenas a primeira newsletter para evitar ultrapassar o limite de envio de emails do SMTP
+    * 
+    * @access public
+    * @return void
+    */
+    public function getNewslettersQueue(){
+        $ModelNewslettersqueue       = ClassRegistry::init('Newslettersqueue');
+
+        $ModelNewslettersqueue->Behaviors->attach('Containable');
+        $this->Newslettersqueue = $ModelNewslettersqueue->find('first', array(
+            'conditions'=>array(
+                "`status` = '0'",
+                "CAST(Newslettersqueue.data_envio AS DATE) = CAST( NOW() AS DATE )"
+            ),
+            'order'=>'Newslettersqueue.data_envio ASC',
+            'contain'=>array(
+                'Newslettersuser',
+                'Newslettersgroup'=>array(
+                    'Newslettersemail'=>array(
+                        'conditions'=>array("Newslettersemail.status = '0'")/*,
+                        'limit'=>$this->max_sent_per_hour*/
+                        // A limitação do número de emails é feita na hora do envio
+                    )
+                )
+            )
+        ));
+
+
+        $this->total_queue = count($this->Newslettersqueue);
+        $this->setLog("Total de newsletters na fila de envio em ($this->data_atual): $this->total_queue");
+
+        // Se não tiver newsletter programada para envio, impede que as outras operações sejam realizadas
+        if($this->total_queue == 0) $this->proceed = false; 
+    } //end getNewslettersQueue
+
+    /**
+    * Pega o total de emails nos grupos que faltam receber a newsletter
+    * 
+    * @access public
+    * @return void
+    */
+    public function getDestinatarios(){
+        // Só realiza a operação se tiver alguma newsletter na fila de envio
+        if($this->proceed){
+            /**
+             * Procura os emails dos grupos e monta uma lista de emails únicos para enviar
+            */
+            foreach ($this->Newslettersqueue['Newslettersgroup'] as $group) {
+                foreach ($group['Newslettersemail'] as $email) {
+                    if( !in_array_r($email['email'], $this->destinatarios) )
+                        $this->destinatarios[] = array(
+                            'id' => $email['id'],
+                            'nome' => $email['nome'],
+                            'email' => $email['email']
+                        );
+                }
+            }
+
+            $this->total_destinatarios = count($this->destinatarios);
+            $this->setLog('Total de destinatários disponíveis para envio da news: '.$this->total_destinatarios);
+            // die((string)$this->total_destinatarios);
+
+            // Se não tiver emails para o envio da news, impede que as outras operações sejam realizadas
+            // e reseta os emails associados a esta newsletter
+            // e desativa a newsletter
+            if($this->total_destinatarios == 0) {
+                $this->proceed = false;
+
+                $this->disableNewsletterQueue();
+            }
+            unset($this->Newslettersqueue['Newslettersgroup']); //Limpa o array de emails e grupos para liberar memoria
+        }
+    } //end getDestinatarios()
+
+    /**
+    * Desabilita a newsletter atual, e atualiza
+    * 
+    * @access private
+    * @return void
+    */
+     /*private function resetDestinatarios(){
+        $destinatarios_ids = array(); // Monta uma lista com os ids a desativar
+        foreach ($this->destinatarios as $destinatario) {
+            $destinatarios_ids[] = $destinatario['id'];
+        }
+     }*/
+
+    /**
+    * Reseta os endereços de emails para torná-los disponíveis para novo envio ( por outra newsletter, é claro ¬¬ )
+    * 
+    * @access private
+    * @return void
+    */
+     private function resetDestinatarios(){
+        $destinatarios_ids = array(); // Monta uma lista com os ids a desativar
+        foreach ($this->destinatarios as $destinatario) {
+            $destinatarios_ids[] = $destinatario['id'];
+        }
+     }
+
+
+
+
+
+
+
+
 
 
     /**
@@ -476,10 +591,10 @@ class NewsletterdispatchComponent extends Component {
     * @return integer : Total de remetentes
     */
     function getTotalRemetentes(){
-        $this->total_remetentes = $this->Newslettersemail->find('count');
-        $this->log[] = '<b>Total de remetentes cadastrados no sistema:</b> '.$this->total_remetentes;
-        CakeLog::write("debug", 'Total de remetentes cadastrados no sistema: '.$this->total_remetentes);
-        // die((string)$this->total_remetentes);
+        $this->total_emails = $this->Newslettersemail->find('count');
+        $this->log[] = '<b>Total de remetentes cadastrados no sistema:</b> '.$this->total_emails;
+        CakeLog::write("debug", 'Total de remetentes cadastrados no sistema: '.$this->total_emails);
+        // die((string)$this->total_emails);
     }
 
     /**
@@ -493,31 +608,29 @@ class NewsletterdispatchComponent extends Component {
         $options = array(
             'conditions'=>array("`status` = '0'")
         );
-        $this->total_remetentes_queue = $this->Newslettersemail->find('count',$options);
+        $this->total_destinatarios = $this->Newslettersemail->find('count',$options);
         // $log = $this->Newslettersemail->getDataSource()->getLog();debug($log);exit;
-        $this->log[] = '<b>Total de remetentes disponiveis para envio da news:</b> '.$this->total_remetentes_queue;
-        CakeLog::write("debug", 'Total de remetentes disponiveis para envio da news: '.$this->total_remetentes_queue);
-        // die((string)$this->total_remetentes_queue);
+        $this->log[] = '<b>Total de remetentes disponiveis para envio da news:</b> '.$this->total_destinatarios;
+        CakeLog::write("debug", 'Total de remetentes disponiveis para envio da news: '.$this->total_destinatarios);
+        // die((string)$this->total_destinatarios);
     }
+
+
+
 
     /**
-    * Pega o total de newsletters na fila de envio
-    * 
-    * @access private
+    * Guarda as mensagens de log do sistema
     *
-    * @return integer : Total na fila
+    * @access private
+    * @uses CakeLog::write()
+    * @return void
     */
-    function getTotalQueue(){
-        //$Newslettersqueues = ClassRegistry::init('Newslettersqueue');
-        $options = array(
-            'conditions'=>array('`Newslettersqueue`.`tipo`'=>$this->tipo_news, "CAST(data_envio AS DATE) = CAST( NOW() AS DATE )", "`status` = '0'")
-        );
-        $this->total_queue = $this->Newslettersqueue->find('count',$options);
-        $this->log[] = '<b>Total de newsletters na fila de envio:</b> '.$this->total_queue;
-        CakeLog::write("debug", 'Total de newsletters na fila de envio: '.$this->total_queue);
+    private function setLog($mensagem=null){
+        if(!empty($mensagem)){
+            $this->log[] = $mensagem;
+            CakeLog::write("debug", $mensagem);
+        }
     }
-
-
 
     /**
     * Retorna as mensagens do sistema
@@ -526,7 +639,7 @@ class NewsletterdispatchComponent extends Component {
     * @uses Bootstrap::implode_r()
     * @return string HTML das mensagens geradas pelo sistema
     */
-    function getLog(){
+    public function getLog(){
         return !empty($this->log) ? implode_r(array('pieces'=>$this->log,'glue'=>'<br />')) : '';
     }
 
@@ -539,21 +652,6 @@ class NewsletterdispatchComponent extends Component {
     */
     function getError(){
         return !empty($this->error) ? implode_r(array('pieces'=>$this->error,'glue'=>'<br />')) : '';
-    }
-
-
-    /**
-     * Translate error messages
-     *
-     * @access private
-     * @param  string  $str    Message to translate
-     * @param  array   $tokens Optional token values
-     * @return string Translated string
-     */
-    function translate($str, $tokens = array()) {
-        if (array_key_exists($str, $this->translation)) $str = $this->translation[$str];
-        if (is_array($tokens) && sizeof($tokens) > 0)   $str = vsprintf($str, $tokens);
-        return $str;
     }
 
     /**

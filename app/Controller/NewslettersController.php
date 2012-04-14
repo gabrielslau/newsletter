@@ -11,13 +11,12 @@ class NewslettersController extends AppController {
 	public $components = array('Newsletterdispatch');
 
 	public function beforeFilter(){
-		
-		$this->Auth->allowedActions = array('view','enviar_agendadas_simples','newsletter_dispatch'); //Ações permitidas se o usuário não estiver logado
-
+		//Ações permitidas se o usuário não estiver logado
+		$this->Auth->allowedActions = array('view','enviar_agendadas_simples','newsletter_dispatch');
 	}
 
 
-	function newsletter_dispatch(){
+	public function newsletter_dispatch(){
 		$this->autoRender = false;
 		$this->layout = 'ajax';
 		$this->Newsletterdispatch->send();
@@ -29,7 +28,7 @@ class NewslettersController extends AppController {
 
 
 
-	function enviar_agendadas_simples() {
+	public function enviar_agendadas_simples() {
 		
 		$this->loadModel('Newslettersemail');
         $this->loadModel('Newslettersgroup');
@@ -134,120 +133,135 @@ class NewslettersController extends AppController {
 
 
 
-/**
- * index method
- *
- * @return void
- */
+
+
+
+
+
+
+
+
+
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
 	public function index() {
-
-		$this->loadModel('Newslettersqueue');
-
-		$this->Newslettersqueue->recursive = 0;
-		$this->set('newsletters', $this->paginate('Newslettersqueue'));
+		$this->Newsletter->recursive = 0;
+		$this->set('newsletters', $this->paginate());
 
 		$css_for_layout = array('View/newsletters/newsletters_index','admin/core/button');
 		$this->set(compact('css_for_layout'));
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
+	/**
+	 * view method
+	 *
+	 * @param string $id
+	 * @return void
+	 */
 	public function view($id = null) {
-		$this->loadModel('Newslettersqueue');
-
-
-		$this->Newslettersqueue->id = $id;
-		if (!$this->Newslettersqueue->exists()) {
-			throw new NotFoundException(__('Invalid newsletter'));
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('%s inválida.', true), 'Newsletter'));
+			$this->redirect(array('action' => 'index'));
 		}
+		$newsletter = $this->Newsletter->read(null, $id);
 
-		$newsletter = $this->Newslettersqueue->read(null, $id);
+		App::uses('File', 'Utility');
+		$path_layout = 'Emails'.DS.'html'.DS.'newsletter_';
+		$file = new File(APP.'View'.DS.'Layouts'.DS. $path_layout.$newsletter['User']['username'].'.ctp');
 
-		// print_r($newsletter);exit();
+		//Seta o layout padrão, caso não exista um
 
-		$this->layout = 'Emails'.DS.'html'.DS.'newsletter_'.$newsletter['Newslettersuser']['username'];
+		// TODO: Deixar o usuário escolher qual layout utilizar
 
+		$this->layout = $file->exists() ? $path_layout.$newsletter['User']['username'] : $path_layout.'default';
 		$this->set(compact('newsletter'));
 	}
 
-/**
- * add method
- *
- * @return void
- */
+	/**
+	 * add method
+	 *
+	 * @return void
+	 */
+
+	// TODO: Escolher template
+	
 	public function add() {
 		$sessao_formulario = $this->Session->read('DadosNewsAdd'); // Sessão com os dados do formulário
 
-		$this->loadModel('Newslettersqueue');
 		if ($this->request->is('post')) {
 
-			if( isset($this->request->data['Newslettersqueue']['to']) && !empty($this->request->data['Newslettersqueue']['to']) ) $this->request->data['Newslettersqueue']['to'] = implode(',', $this->request->data['Newslettersqueue']['to']);
-			if( isset($this->request->data['Newslettersqueue']['data_envio']) && !empty($this->request->data['Newslettersqueue']['data_envio']) ) {
-				$date = new DateTime(trim($this->request->data['Newslettersqueue']['data_envio']));
-				$this->request->data['Newslettersqueue']['data_envio'] =  $date->format('Y-m-d H:i:s');
-				// $this->request->data['Newslettersqueue']['data_envio'] =  date_format('Y-m-d H:i:s', trim($this->request->data['Newslettersqueue']['data_envio']));
+			if( isset($this->request->data['Newsletter']['date_send']) && !empty($this->request->data['Newsletter']['date_send']) ) {
+				$date = new DateTime(trim($this->request->data['Newsletter']['date_send']));
+				$this->request->data['Newsletter']['date_send'] =  $date->format('Y-m-d H:i:s');
 			}
-			// print_r($this->request->data);exit;
 
 
-			$this->Newslettersqueue->set($this->request->data);
-			$this->Newslettersqueue->validationSet = 'CadastroNews';
-			if($this->Newslettersqueue->validates()){
-				$this->request->data['Newslettersqueue']['created'] = date('Y-m-d H:i:s');
-				$this->request->data['Newslettersqueue']['newslettersuser_id'] = AuthComponent::user('id');
+			$this->Newsletter->set($this->request->data);
+			$this->Newsletter->validationSet = 'CadastroNews';
+			if($this->Newsletter->validates()){
+				$this->request->data['Newsletter']['created'] = date('Y-m-d H:i:s');
+				$this->request->data['Newsletter']['user_id'] = AuthComponent::user('id');
 
-				$this->Newslettersqueue->create();
-				if ($this->Newslettersqueue->save($this->request->data)) {
-					$this->setAlert(__('The newsletter has been saved'));
+				$this->Newsletter->create();
+				if ($this->Newsletter->saveAll($this->request->data)) {
+					$this->setAlert(__('A newsletter foi salva com sucesso'));
 					$this->redirect(array('action' => 'index'));
 				} else {
-					$this->setAlert(__('The newsletter could not be saved. Please, try again.'),false);
+					$this->setAlert(__('A newsletter não pôde ser salva'),false);
 				}
 			}
 			/*else{
-				print_r($this->Newslettersqueue->invalidFields());exit();
+				print_r($this->Newsletter->invalidFields());exit();
 			}*/
 		}
 
-		$this->loadModel('Newslettersgroup');
-		$newslettersgroups = $this->Newslettersgroup->find('list',array('conditions'=>array('id>1')));
-
 		$css_for_layout = array('admin/core/form','admin/core/button','plugins/timepicker/timepicker','plugins/chosen/chosen' /*'plugins/uploadify/uploadify'*/);
-		$js_for_layout = array('plugins/chosen/chosen.jquery.min','ckeditor/ckeditor','ckeditor/adapters/jquery', 'plugins/timepicker/timepicker', /*'plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min',*/'View/pages/gerencia_add');
+		$js_for_layout = array('plugins/chosen/chosen.jquery.min','ckeditor/ckeditor','ckeditor/adapters/jquery', 'plugins/timepicker/timepicker', /*'plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min',*/'View/newsletters/add');
 
-		$this->set(compact('css_for_layout','js_for_layout','sessao_formulario','newslettersgroups'));
-	}	
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
+		/**
+		 * Dados relacionados
+		*/
+		// $users = $this->Newsletter->User->find('list');
+		$emails = $this->Newsletter->Email->find('list');
+		$groups = $this->Newsletter->Group->find('list', array('conditions'=>array('email_count > 0')));
+		$title_for_layout = 'Cadastrar nova Newsletter';
+
+		$this->set(compact('users', 'emails', 'groups','css_for_layout','js_for_layout','sessao_formulario','title_for_layout'));
+	}//end add
+
+	/**
+	 * edit method
+	 *
+	 * @param string $id
+	 * @return void
+	 */
 	public function edit($id = null) {
-		$this->loadModel('Newslettersqueue');
-		$this->Newslettersqueue->id = $id;
-		if (!$this->Newslettersqueue->exists()) {
+		$this->Newsletter->id = $id;
+		if (!$this->Newsletter->exists()) {
 			throw new NotFoundException(__('Invalid newsletter'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 
-			if( isset($this->request->data['Newslettersqueue']['to']) && !empty($this->request->data['Newslettersqueue']['to']) ) $this->request->data['Newslettersqueue']['to'] = implode(',', $this->request->data['Newslettersqueue']['to']);
-			if( isset($this->request->data['Newslettersqueue']['data_envio']) && !empty($this->request->data['Newslettersqueue']['data_envio']) ) {
-				$date = new DateTime(trim($this->request->data['Newslettersqueue']['data_envio']));
-				$this->request->data['Newslettersqueue']['data_envio'] =  $date->format('Y-m-d H:i:s');
+			if( isset($this->request->data['Newsletter']['date_send']) && !empty($this->request->data['Newsletter']['date_send']) ) {
+				$date = new DateTime(trim($this->request->data['Newsletter']['date_send']));
+				$this->request->data['Newsletter']['date_send'] =  $date->format('Y-m-d H:i:s');
 			}
 
-			$this->Newslettersqueue->set($this->request->data);
-			$this->Newslettersqueue->validationSet = 'CadastroNews';
-			if($this->Newslettersqueue->validates()){
+			$this->request->data['Group'] = !empty($this->request->data['Group']['id']) ? $this->request->data['Group']['id'] : array();
+			$this->request->data['Email'] = !empty($this->request->data['Email']['id']) ? $this->request->data['Email']['id'] : array();
 
-				if ($this->Newslettersqueue->save($this->request->data)) {
-					$this->setAlert(__('The newsletter has been saved'));
+			// print_r($this->request->data);exit();
+
+			$this->Newsletter->set($this->request->data);
+			$this->Newsletter->validationSet = 'CadastroNews';
+			if($this->Newsletter->validates()){
+
+				if ($this->Newsletter->saveAll($this->request->data)) {
+					$this->setAlert(__('A newsletter foi salva'));
 					$this->redirect(array('action' => 'index'));
 				} else {
 					$this->setAlert(__('The newsletter could not be saved. Please, try again.'),false);
@@ -256,43 +270,107 @@ class NewslettersController extends AppController {
 
 			}
 		} else {
-			$this->Newslettersqueue->recursive = -1;
-			$this->request->data = $this->Newslettersqueue->read(null, $id);
+			// $this->Newsletter->recursive = -1;
+			// Remove relacionamento dos Models que não serão usados nessa consulta
+			$this->Newsletter->unbindModel(array(
+				'hasMany' => array('Queue','Log')
+			));
+			$this->request->data = $this->Newsletter->read(null, $id);
 			// print_r($this->request->data);exit();
 		}
 
-		$this->loadModel('Newslettersgroup');
-		$newslettersgroups = $this->Newslettersgroup->find('list',array('conditions'=>array('id>1')));
 
 		$css_for_layout = array('admin/core/form','admin/core/button','plugins/timepicker/timepicker','plugins/chosen/chosen' /*'plugins/uploadify/uploadify'*/);
-		$js_for_layout = array('plugins/chosen/chosen.jquery.min','ckeditor/ckeditor','ckeditor/adapters/jquery', 'plugins/timepicker/timepicker', /*'plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min',*/'View/pages/gerencia_add');
+		$js_for_layout = array('plugins/chosen/chosen.jquery.min','ckeditor/ckeditor','ckeditor/adapters/jquery', 'plugins/timepicker/timepicker', /*'plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min',*/'View/newsletters/add');
 
 		$this->set(compact('css_for_layout','js_for_layout','sessao_formulario','newslettersgroups'));
 
+
+		/**
+		 * Dados relacionados
+		*/
+		// $users = $this->Newsletter->User->find('list');
+		$emails = $this->Newsletter->Email->find('list');
+		$groups = $this->Newsletter->Group->find('list', array('conditions'=>array('email_count > 0')));
+		$title_for_layout = 'Atualizar Newsletter';
+		$this->set(compact('users', 'emails', 'groups','title_for_layout'));
+
 		$this->render('add');
+	}//end edit
+
+	/**
+	 * enable method
+	 * 
+	 * Reativa a newsletter e coloca novamente na fila de envio (  TODO  )
+	 *
+	 * @param string $id
+	 * @return void
+	 */	
+	public function enable($id = null) {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+		$this->Newsletter->id = $id;
+		if (!$this->Newsletter->exists()) {
+			throw new NotFoundException(__('Newsletter inválida'));
+		}
+
+		if ($this->Newsletter->saveField('status',1)) {
+			$this->setAlert(__('A Newsletter foi reativada'));
+			$this->redirect(array('action'=>'index'));
+		}
+		$this->setAlert(__('A Newsletter não pôde ser reativada'),false);
+		$this->redirect(array('action' => 'index'));
 	}
 
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
+	/**
+	 * disable method
+	 * 
+	 * Desativa a newsletter para que não possa mais ser enviada ( apenas visualizada )
+	 *
+	 * @param string $id
+	 * @return void
+	 */	
+	public function disable($id = null) {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+		$this->Newsletter->id = $id;
+		if (!$this->Newsletter->exists()) {
+			throw new NotFoundException(__('Newsletter inválida'));
+		}
+
+		if ($this->Newsletter->saveField('status',0)) {
+			$this->setAlert(__('A Newsletter foi desativada. Agora só está acessível para visualização'));
+			$this->redirect(array('action'=>'index'));
+		}
+		$this->setAlert(__('A Newsletter não pôde ser desativada'),false);
+		$this->redirect(array('action' => 'index'));
+	}
+
+
+	/**
+	 * delete method
+	 * 
+	 * Exclui a newsletter definitivamente do sistema (método acessado somente pelo administrador)
+	 *
+	 * @param string $id
+	 * @return void
+	 */	
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->loadModel('Newslettersqueue');
-		$this->Newslettersqueue->id = $id;
-		if (!$this->Newslettersqueue->exists()) {
-			throw new NotFoundException(__('Invalid newsletter'));
+		$this->Newsletter->id = $id;
+		if (!$this->Newsletter->exists()) {
+			throw new NotFoundException(__('Newsletter inválida'));
 		}
-		if ($this->Newslettersqueue->delete()) {
-			$this->setAlert(__('Newsletter deleted'));
+		if ($this->Newsletter->delete()) {
+			$this->setAlert(__('Newsletter excluída definitivamente.'));
 			$this->redirect(array('action'=>'index'));
 		}
-		$this->setAlert(__('Newsletter was not deleted'),false);
+		$this->setAlert(__('A Newsletter não pôde ser excluída excluída'),false);
 		$this->redirect(array('action' => 'index'));
 	}
-
-} // end Controller
+}//end Controller
+?>

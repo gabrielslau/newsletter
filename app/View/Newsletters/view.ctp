@@ -1,5 +1,5 @@
 <div class="newsletters view">
 	<?php
-		if(isset($newsletter['Newslettersqueue']['emailbody'])) echo $newsletter['Newslettersqueue']['emailbody'];
+		if(isset($newsletter['Newsletter']['emailbody'])) echo $newsletter['Newsletter']['emailbody'];
 	?>
 </div>
