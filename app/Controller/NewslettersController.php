@@ -21,7 +21,7 @@ class NewslettersController extends AppController {
 		$this->layout = 'ajax';
 		$this->Newsletterdispatch->send();
 
-		echo $this->Newsletterdispatch->getLog();
+		// echo $this->Newsletterdispatch->getLog();
 		/*if( $this->Newsletterdispatch->sended ){
 		}
 		else echo $this->Newsletterdispatch->getError();*/
