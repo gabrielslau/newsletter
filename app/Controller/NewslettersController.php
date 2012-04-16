@@ -205,6 +205,12 @@ class NewslettersController extends AppController {
 				$this->request->data['Newsletter']['created'] = date('Y-m-d H:i:s');
 				$this->request->data['Newsletter']['user_id'] = AuthComponent::user('id');
 
+				/*$this->Newsletter->unbindModel(array(
+					'hasMany' => array('Log'),
+					'belongsTo' => array('User','Template')
+				));*/
+
+
 				$this->Newsletter->create();
 				if ($this->Newsletter->saveAll($this->request->data)) {
 					

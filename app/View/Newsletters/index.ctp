@@ -21,7 +21,7 @@
 						<tr class="thead">
 							<th class="sorting"><?php echo $this->Paginator->sort('subject','Assunto');?></th>
 							<th class="sorting"><?php echo $this->Paginator->sort('emailbody','Conteúdo');?></th>
-							<th class="sorting"><?php echo $this->Paginator->sort('created','Data');?></th>
+							<th class="sorting"><?php echo $this->Paginator->sort('date_send','Data de envio');?></th>
 							<!-- <th>&nbsp;</th> -->
 						</tr>
 					</thead><!-- cabeçalho -->
@@ -43,9 +43,9 @@
 						<td>
 							<div class="date" style="padding:10px;text-align:center">
 							<?php 
-								echo getDay($newsletter['Newsletter']['created']).'-';
-								echo getMesAbr( getMonth($newsletter['Newsletter']['created']) ).'-';
-								echo getYear($newsletter['Newsletter']['created']);
+								echo getDay($newsletter['Newsletter']['date_send']).'-';
+								echo getMesAbr( getMonth($newsletter['Newsletter']['date_send']) ).'-';
+								echo getYear($newsletter['Newsletter']['date_send']);
 							?>
 							</div>
 							<div class="row-actionss">
