@@ -13,10 +13,14 @@
 				echo $this->Form->input('email', array('type'=>'text', 'label' => array('text'=>'Email *'), 'div'=>array('class'=>'mws-form-row'), 'between'=>'<div class="mws-form-item small">', 'after'=>'</div>', 'class'=>'mws-textinput', 'value'=>(isset($sessao_formulario['Email']['email']) ? $sessao_formulario['Email']['email'] : $this->Form->value('Email.email') ) ));
 
 				$options_groups = array();
-				if($this->action == 'edit'){
-					foreach ($this->Form->value('Group') as $group) {
-						$options_groups[] = $group['id'];
-					}
+				$form_groups = $this->Form->value('Group');
+				if($this->action == 'edit' && !empty($form_groups)){
+					// print_r($form_groups);exit();
+					$options_groups = $form_groups;
+					/*foreach ($form_groups as $group) {
+						// die( $group );
+						$options_groups[$group] = $group;
+					}*/
 				}
 
 				echo $this->Form->input('Group.id', array('type'=>'select', 'label' => array('text'=>'Associe este email a um vários grupos *'), 'div'=>array('class'=>'mws-form-row'), 'between'=>'<div class="mws-form-item small">', 'after'=>'</div>', 'class'=>'chzn-select', 'multiple'=>true, 'size'=>'10', 'options'=>$groups, 'default'=>$options_groups  ));

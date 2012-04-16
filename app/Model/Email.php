@@ -59,16 +59,16 @@ class Email extends AppModel {
 
 	public $hasMany = array(
 		'Queue' => array(
-			'className' => 'Queue',
-			'foreignKey' => 'email_id',
-			'dependent' => false,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
+			'className'    => 'Queue',
+			'foreignKey'   => 'email_id',
+			'dependent'    => true,
+			'conditions'   => '',
+			'fields'       => '',
+			'order'        => '',
+			'limit'        => '',
+			'offset'       => '',
+			'exclusive'    => '',
+			'finderQuery'  => '',
 			'counterQuery' => ''
 		)
 	);

@@ -54,11 +54,11 @@
 
 									// Mostra opção de Desabilitar e Editar, caso esteja ativado. Senão, Apenas opção de Reativar
 									if( $newsletter['Newsletter']['status'] == 0 ) {
-										echo $this->Form->postLink(__('Reativar'), array('action' => 'enable', $newsletter['Newsletter']['id']), array('class'=>'submitdelete  mws-button red small'), __('Tem certeza que deseja reativar a Newsletter # %s?', $newsletter['Newsletter']['id']));
+										// echo $this->Form->postLink(__('Reativar'), array('action' => 'enable', $newsletter['Newsletter']['id']), array('class'=>'submitdelete  mws-button red small'), __('Tem certeza que deseja reativar a Newsletter # %s?', $newsletter['Newsletter']['id']));
 									}else{
 										echo $this->Html->link(__('Editar', true), array('action' => 'edit', $newsletter['Newsletter']['id']),array('class'=>'mws-button gray small'));
 
-										echo $this->Form->postLink(__('Desativar'), array('action' => 'disable', $newsletter['Newsletter']['id']), array('id'=>'del-'.$newsletter['Newsletter']['id'],'class'=>'submitdelete  mws-button red small'), __('Tem certeza que deseja desativar a Newsletter # %s? \n Ela só ficará  acessível para visualização', $newsletter['Newsletter']['id']));
+										// echo $this->Form->postLink(__('Desativar'), array('action' => 'disable', $newsletter['Newsletter']['id']), array('id'=>'del-'.$newsletter['Newsletter']['id'],'class'=>'submitdelete  mws-button red small'), __('Tem certeza que deseja desativar a Newsletter # %s? \n Ela só ficará  acessível para visualização', $newsletter['Newsletter']['id']));
 									}
 
 								?>

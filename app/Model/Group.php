@@ -6,6 +6,7 @@ App::uses('AppModel', 'Model');
  */
 class Group extends AppModel {
 	var $displayField = 'nome';
+	public $actsAs = array('HabtmCounterCache.HabtmCounterCache'); // ?
 	
 	/**
 	 * Validation rules

@@ -60,6 +60,10 @@ class Newsletter extends AppModel {
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
+		),
+		'Template' => array(
+			'className' => 'Template',
+			'foreignKey' => 'template_id'
 		)
 	);
 
@@ -137,9 +141,16 @@ class Newsletter extends AppModel {
 
 	function beforeSave($options) {
 		if (!empty($this->data)){
-			// $this->data = array_to_utf8($this->data);
+			// print_r($this->data);exit();
+			// Corrige a codificacao dos dados
 			$this->data['Newsletter'] = array_to_utf8($this->data['Newsletter'],true);
+
+			if( isset($this->data['Newsletter']['date_send']) && !empty($this->data['Newsletter']['date_send']) ) {
+				$date = new DateTime( str_replace('/', '-', trim($this->data['Newsletter']['date_send']))  );
+				$this->data['Newsletter']['date_send'] =  $date->format('Y-m-d H:i:s');
+			}
 		}
+
 		return true;
 	}
 }//end Model
