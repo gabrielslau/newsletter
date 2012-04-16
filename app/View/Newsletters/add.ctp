@@ -8,7 +8,7 @@
 			<?php
 				if($this->action == 'edit') echo $this->Form->hidden('id', array('value'=>$this->Form->value('Newsletter.id')));
 
-				echo $this->Form->input('subject', array('type'=>'text', 'label' => array('text'=>'Assunto *'), 'div'=>array('class'=>'mws-form-row'), 'between'=>'<div class="mws-form-item small">', 'after'=>'</div>', 'class'=>'mws-textinput', 'value'=>(isset($sessao_formulario['Newsletter']['subject']) ? $sessao_formulario['Newsletter']['subject'] : $this->Form->value('Newsletter.subject') ) ));
+				echo $this->Form->input('subject', array('type'=>'text', 'label' => array('text'=>'Assunto *'), 'div'=>array('class'=>'mws-form-row'), 'between'=>'<div class="mws-form-item small">', 'after'=>'</div>', 'class'=>'mws-textinput', 'value'=>(isset($sessao_formulario['Newsletter']['subject']) ? $sessao_formulario['Newsletter']['subject'] : $this->Form->value('Newsletter.subject') ), 'maxlength'=>100 ));
 
 				echo $this->Form->input('emailbody', array('type'=>'textarea', 'label' => array('text'=>'Conteúdo *'), 'div'=>array('class'=>'mws-form-row ckeditor'), 'between'=>'<div class="mws-form-item small">', 'after'=>'</div>', 'value'=>(isset($sessao_formulario['Newsletter']['emailbody']) ? $sessao_formulario['Newsletter']['emailbody'] : $this->Form->value('Newsletter.emailbody') ) ));
 
