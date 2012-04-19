@@ -418,12 +418,16 @@ class NewsletterdispatchComponent extends Component {
              * Procura os emails dos grupos e monta uma lista de emails únicos para enviar fazendo a filtragem de quantidade máxima de emails
             */
             $i = 0; //contador geral
+            App::uses('Validation', 'Utility');
+            $validate = new Validation();
+
+            if( $validate->email( $destinatario['email'], true) ) {
             
             // armazena os emails na lista
             if(!empty($this->Newsletter['Email'])):
                 // print_r($this->Newsletter);exit();
                 foreach ($this->Newsletter['Email'] as $email) {
-                    if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
+                    if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
 
                         $this->destinatarios[$i]['email'] = $email['email'];
                         $this->destinatarios[$i]['nome']  = $email['nome'];
@@ -437,7 +441,7 @@ class NewsletterdispatchComponent extends Component {
             if(!empty($this->Newsletter['Group'])):
                 foreach ($this->Newsletter['Group'] as $group) {
                     foreach ($group['Email'] as $email){
-                        if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
+                        if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
 
                             $this->destinatarios[$i]['email'] = $email['email'];
                             $this->destinatarios[$i]['nome']  = $email['nome'];
