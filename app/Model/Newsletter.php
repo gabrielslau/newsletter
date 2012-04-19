@@ -67,7 +67,14 @@ class Newsletter extends AppModel {
 		)
 	);
 
-	var $hasMany = array(
+	var $hasOne = array(
+		'Log' => array(
+			'className' => 'Log',
+			'foreignKey' => 'newsletter_id'
+		)
+	);
+
+	/*var $hasMany = array(
 		'Log' => array(
 			'className' => 'Log',
 			'foreignKey' => 'newsletter_id',
@@ -94,7 +101,7 @@ class Newsletter extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		)
-	);
+	);*/
 
 
 	var $hasAndBelongsToMany = array(

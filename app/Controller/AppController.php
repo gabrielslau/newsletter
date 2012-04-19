@@ -12,7 +12,7 @@ App::uses('Controller', 'Controller');
  * @link http://book.cakephp.org/view/957/The-App-Controller
  */
 class AppController extends Controller {
-	var $helpers = array('Html', 'Text','Time', 'Form', 'Js','Session','Minify','AssetCompress.AssetCompress');
+	var $helpers = array('Html', 'Text','Time', 'Form', 'Js','Session','Minify');
 	var $components = array(
 		'Auth'=>array(
 			'loginAction' => array(
@@ -48,13 +48,10 @@ class AppController extends Controller {
 		    $this->Session->id($session_id);
 		}
 
-		/*if (isset($this->params['prefix'])) {
-
-			// $this->set('Siteconfigs', $this->Siteconfig->find('all')); // Configurações do site
-
-		}*/
+		
 
 		$this->set('userinfo', $this->Session->read('UserInfo'));//Pega a sessão que foi gravada no login
+		// die('poia');
 	}
 
 	public function isAuthorized($user = null) {

@@ -9,10 +9,13 @@ class NewslettersController extends AppController {
 
 	public $helper = array('Time');
 	public $components = array('Newsletterdispatch');
+	public $paginate = array(
+		'order'=>'Newsletter.date_send DESC'
+	);
 
 	public function beforeFilter(){
 		//Ações permitidas se o usuário não estiver logado
-		$this->Auth->allowedActions = array('view','enviar_agendadas_simples','newsletter_dispatch');
+		$this->Auth->allowedActions = array('view','newsletter_dispatch');
 	}
 
 
@@ -21,8 +24,9 @@ class NewslettersController extends AppController {
 		$this->layout = 'ajax';
 		$this->Newsletterdispatch->send();
 
-		// echo $this->Newsletterdispatch->getLog();
+		echo $this->Newsletterdispatch->getLog();
 		/*if( $this->Newsletterdispatch->sended ){
+			echo $this->Newsletterdispatch->getLog();
 		}
 		else echo $this->Newsletterdispatch->getError();*/
 	}
@@ -31,6 +35,7 @@ class NewslettersController extends AppController {
 
 	public function enviar_agendadas_simples() {
 		
+		die('funcao desabilitada');
 		$this->loadModel('Newslettersemail');
         $this->loadModel('Newslettersgroup');
         $this->loadModel('Newslettersqueue');
@@ -150,9 +155,11 @@ class NewslettersController extends AppController {
 	 */
 	public function index() {
 		$this->Newsletter->recursive = -1;
+		$this->Newsletter->Behaviors->attach('Containable');
+		$this->paginate['contain'] = array('Group','Template');
 		$this->set('newsletters', $this->paginate());
 
-		$css_for_layout = array('View/newsletters/newsletters_index','admin/core/button');
+		$css_for_layout = array(/*'View/newsletters/newsletters_index',*/'admin/core/button');
 		$this->set(compact('css_for_layout'));
 	}
 
@@ -169,14 +176,15 @@ class NewslettersController extends AppController {
 		}
 		$newsletter = $this->Newsletter->read(null, $id);
 
+		// Enable CacheView
+		$this->helpers[] = 'Cache';
+		$this->cacheAction = '1 day';
+
 		App::uses('File', 'Utility');
 		$path_layout = 'Emails'.DS.'html'.DS;
 		$file = new File(APP.'View'.DS.'Layouts'.DS. $path_layout.$newsletter['Template']['file'].'.ctp');
 
 		//Seta o layout padrão, caso não exista um
-
-		// TODO: Deixar o usuário escolher qual layout utilizar
-
 		$this->layout = $file->exists() ? $path_layout.$newsletter['Template']['file'] : $path_layout.'newsletter_default';
 		$this->set(compact('newsletter'));
 	}
@@ -196,8 +204,9 @@ class NewslettersController extends AppController {
 			// Dados relacionados
 			$this->request->data['Group'] = !empty($this->request->data['Group']['id']) ? $this->request->data['Group']['id'] : array();
 			$this->request->data['Email'] = !empty($this->request->data['Email']['id']) ? $this->request->data['Email']['id'] : array();
-			$this->request->data['Queue'] = $this->setQueue(null, $this->request->data['Group'],$this->request->data['Email']); // Organiza os emails para a lista de recebimento da news
-			// die('poa');
+			// $this->request->data['Queue'] = $this->setQueue(null, $this->request->data['Group'],$this->request->data['Email']); // Organiza os emails para a lista de recebimento da news
+			
+			// print_r($this->request->data['Queue']);exit();
 
 			$this->Newsletter->set($this->request->data);
 			$this->Newsletter->validationSet = 'CadastroNews';
@@ -214,12 +223,16 @@ class NewslettersController extends AppController {
 				$this->Newsletter->create();
 				if ($this->Newsletter->saveAll($this->request->data)) {
 					
-					/*$id = $this->Newsletter->id;
-					$data = array();
-					$data['Queue'] = $this->setQueue($id, $this->request->data['Group'],$this->request->data['Email']); // Organiza os emails para a lista de recebimento da news*/
+					// Salva a fila de envio
+					// Organiza os emails para a lista de recebimento da news
+					/*if($this->setQueue($this->Newsletter->id, $this->request->data['Group'],$this->request->data['Email'])){
+						$this->setAlert(__('A newsletter foi salva mas a fila de envio não pôde ser gerada'));
+					}
+					else $this->setAlert(__('A newsletter foi salva com sucesso'));*/
 
 
-					$this->setAlert(__('A newsletter foi salva com sucesso'));
+
+
 					$this->redirect(array('action' => 'index'));
 				} else {
 					$this->setAlert(__('A newsletter não pôde ser salva'),false);
@@ -264,7 +277,7 @@ class NewslettersController extends AppController {
 			// Dados relacionados
 			$this->request->data['Group'] = !empty($this->request->data['Group']['id']) ? $this->request->data['Group']['id'] : array();
 			$this->request->data['Email'] = !empty($this->request->data['Email']['id']) ? $this->request->data['Email']['id'] : array();
-			$this->request->data['Queue'] = $this->setQueue($id, $this->request->data['Group'],$this->request->data['Email']); // Organiza os emails para a lista de recebimento da news
+			// $this->request->data['Queue'] = $this->setQueue($id, $this->request->data['Group'],$this->request->data['Email']); // Organiza os emails para a lista de recebimento da news
 
 			// print_r($this->request->data);exit();
 
@@ -311,6 +324,8 @@ class NewslettersController extends AppController {
 		$this->render('add');
 	}//end edit
 
+
+
 	/**
 	 * setQueue method
 	 * 
@@ -324,45 +339,80 @@ class NewslettersController extends AppController {
 	private function setQueue($id = null, $groups = null, $emails = null){
 		$lista_de_emails = array(); // Armazena uma lista de emails únicos
 		$i = 0; //contador geral
+		
 
-		// Procura emails na lista de grupos
-		if(!empty($groups)):
-			$this->Newsletter->Group->Behaviors->attach('Containable');
-			$EmailsInGroup = $this->Newsletter->Group->find('all',array('conditions'=>array( 'Group.id'=>$groups ), 'contain'=>array('Email'=>array('fields'=>array('id')))  ));
-
-			// armazena os emails na lista
-			foreach ($EmailsInGroup as $group) {
-				foreach ($group['Email'] as $email){
-					if( !in_array_r($email['id'], $lista_de_emails) ){
-						/*$lista_de_emails[] = array(
-							'newsletter_id' => $id,
-							'email_id'      => $email['id']
-						);*/
-						if(!empty($id)) $lista_de_emails[$i]['newsletter_id'] = $id;
-						$lista_de_emails[$i]['email_id']      = $email['id'];
-						$i++;
-					}
-				}
-			}
-		endif;
 
 		// armazena os emails na lista
 		if(!empty($emails)):
 			foreach ($emails as $emailId) {
 				if( !in_array_r($emailId, $lista_de_emails) ){
-					/*$lista_de_emails[] = array(
-						'newsletter_id' => $id,
-						'email_id'      => $emailId
-					);*/
-					if(!empty($id)) $lista_de_emails[$i]['newsletter_id'] = $id;
-					$lista_de_emails[$i]['email_id']      = $emailId;
+					if(!empty($id)) $lista_de_emails['Queue'][$i]['newsletter_id'] = $id;
+					$lista_de_emails['Queue'][$i]['email_id']                      = $emailId;
 					$i++;
 				}
 			}
+
+			if(empty($groups)){
+				// Salva a queue só para os emails
+				$this->saveQueue($lista_de_emails);
+			}
 		endif;
 
-		return !empty($lista_de_emails) ? $lista_de_emails : false;
+
+		// Procura emails na lista de grupos
+		if(!empty($groups)):
+			$this->Newsletter->Group->Behaviors->attach('Containable');
+			$limit    = 500; // Seleciona 500 resultados por vez
+			$offset   = 0; 
+			$continue = true;
+
+			do{
+				$EmailsInGroup = $this->Newsletter->Group->find('all',array('conditions'=>array( 'Group.id'=>$groups ), 'contain'=>array('Email'=>array('fields'=>array('id'),'limit'=>$limit,'offset'=>$offset))  ));
+
+				// print_r($EmailsInGroup);exit();
+
+				// Impede o script de continuar rodando se não tiver mais emails a cadastrar
+				if( empty($EmailsInGroup) ){
+					$continue = false;
+					$lista_de_emails = array();
+				}
+
+				if($continue):
+					// armazena os emails na lista
+					foreach ($EmailsInGroup as $group) {
+						foreach ($group['Email'] as $email){
+							if( !in_array_r($email['id'], $lista_de_emails) ){
+								if(!empty($id)) $lista_de_emails['Queue'][$i]['newsletter_id'] = $id;
+								$lista_de_emails['Queue'][$i]['email_id']                      = $email['id'];
+								$i++;
+							}
+						}
+					}
+					$offset += $limit;
+
+					// salva
+					$this->saveQueue($lista_de_emails);
+
+				endif;
+			}while ($continue);
+
+			
+		endif;
 	}
+
+	/**
+	 * saveQueue method
+	 * 
+	 * Salva uma lista de emails únicos na fila de envio da newsletter
+	 *
+	 * @param array $dataQueue
+	 * @return boolean
+	 */	
+	private function saveQueue($dataQueue){
+		return $this->Newsletter->Queue->save($dataQueue);
+	}
+
+
 
 	/**
 	 * enable method

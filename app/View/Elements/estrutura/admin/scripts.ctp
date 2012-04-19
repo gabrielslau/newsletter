@@ -5,7 +5,7 @@
 
 	$scripts = isset($scripts) ? $scripts : array(
 		'jquery-1.7.2.min',
-		'jquery.mousewheel-min',
+		'plugins/jquery.mousewheel.min',
 		// 'admin/jquery-ui',
 		'admin/jquery-ui-1.8.18.custom.min',
 		// 'admin/jquery.ui.touch-punch.min', 
@@ -37,5 +37,5 @@
 	if(isset($jsExternal_for_layout) && !empty($jsExternal_for_layout)){
 		echo $this->Html->script($jsExternal_for_layout); // Carrega os scripts externos
 	}
-	echo $this->AssetCompress->includeJs();
+	// echo $this->AssetCompress->includeJs();
 ?>

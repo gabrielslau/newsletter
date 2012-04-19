@@ -9,18 +9,47 @@ class EmailsController extends AppController {
 
 	public $components = array('Upload','RequestHandler','Json','Cuploadify.Cuploadify');
 	public $paginate   = array(
-		'order'=>'id DESC'
+		'order'=>'id DESC',
+		'cache' => true, 
+		'cacheConfig' => 'long'
 	);
+
+
+	/**
+	 * validatelist method
+	 *
+	 * @return void
+	 */
+	function validatelist() {
+		$this->autoRender = false;
+
+		App::uses('Validation', 'Utility');
+
+		$validate = new Validation();
+
+		$emails = $this->Email->find('list' );
+
+		foreach($emails as $id=>$email){
+			if( !$validate->email( $email ) ){
+				echo $email.'<br />';
+			}
+		}
+
+	}//end index
+
+
 
 	/**
 	 * index method
 	 *
 	 * @return void
 	 */
-	function index() {
+	function index($email=null) {
 		$this->paginate['cache'] = true;
+		if(!empty($email)) $this->paginate['conditions'] = array('email'=>$email);
 		$emails                  = $this->paginate();
-		$groups                  = $this->Email->Group->find('list');
+		// $groups               = $this->Email->Group->find('list');
+		$groups                  = $this->Email->Group->find('list',array('order'=>'nome ASC'));
 
 		// Scripts da página
 		$css_for_layout = array('plugins/chosen/chosen','admin/core/button', 'View/newsletters/newsletters_index');
@@ -162,7 +191,7 @@ class EmailsController extends AppController {
 		/**
 		 * Dados relacionados
 		*/
-		$groups         = $this->Email->Group->find('list');
+		$groups         = $this->Email->Group->find('list',array('order'=>'nome ASC'));
 		
 		// Scrips da página
 		$css_for_layout = array('admin/core/form','admin/core/button','plugins/chosen/chosen','plugins/tipsy/tipsy', 'View/emails/add');

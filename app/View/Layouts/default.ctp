@@ -5,11 +5,11 @@
 </head>
 
 <body>
-	<?php echo $this->element('estrutura/admin/header');?>
+	<?php echo $this->element('estrutura/admin/header',array('cache' => array('time' => '+1 year')));?>
     
     <!-- Start Main Wrapper -->
     <div id="mws-wrapper">
-    	<?php echo $this->element('estrutura/admin/sidebar');?>
+    	<?php echo $this->element('estrutura/admin/sidebar',array('cache' => array('time' => '+1 year')));?>
     	
         <!-- Main Container Start -->
         <div id="mws-container" class="clearfix">

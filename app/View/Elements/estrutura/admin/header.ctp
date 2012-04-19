@@ -23,9 +23,11 @@
             <!-- Username and Functions -->
             <div id="mws-user-functions">
                 <div id="mws-username">
+                    <cake:nocache>
                     Olá, <?php 
                     echo AuthComponent::user('nome'); 
                     ?>
+                    </cake:nocache>
                 </div>
                 <ul>
                 	<!-- <li><a href="#">Profile</a></li> -->

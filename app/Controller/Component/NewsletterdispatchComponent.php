@@ -216,7 +216,7 @@ class NewsletterdispatchComponent extends Component {
         $this->controller = $controller;
 
         // overiddable variables
-        $this->max_sent_per_hour   = 400;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
+        $this->max_sent_per_hour   = 100;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
         //$this->sec               = 10;            // Tempo entre o envio de um pacote e outro (em segundos)
         //$this->limitMail         = 500;           // Limite de emails por hora
         //$this->secLimitMail      = 2400;          // Tempo de pausa por hora (40 minutos = 2400 segundos)
@@ -266,7 +266,7 @@ class NewsletterdispatchComponent extends Component {
         $this->getDestinatarios();      // Lista de emails nos grupos selecionados que faltam receber a newsletter
         
         if( $this->proceed ){
-            $this->setLog("Pronto pra mandar a news");
+            $this->setLog("Pronto pra mandar a news #".$this->Newsletter['Newsletter']['id']);
 
             if($this->total_destinatarios_in_queue > 0){
                
@@ -275,79 +275,68 @@ class NewsletterdispatchComponent extends Component {
                 */
 
                 App::uses('CakeEmail', 'Network/Email');
-                
+                App::uses('Validation', 'Utility');
 
-                $lista_de_destinatarios = $ids_queue = array();
-                foreach ($this->destinatarios as $destinatario) {
-                    // if( validarEmail( $destinatario['Email']['email'] ) ) $lista_de_destinatarios[] = array($destinatario['Email']['email']=>$destinatario['Email']['nome'] );
-                    if( validarEmail( $destinatario['Email']['email'] ) ) {
-                        $ids_queue[]              = $destinatario['id']; // guarda o ID da queue que recebeu o email, para eliminar da lista
-                        $lista_de_destinatarios[] = $destinatario['Email']['email'];
+                $validate = new Validation();
+                $ids_queue = array();
+                
+                // Envia a Newsletter para cada usuário da lista
+                foreach ($this->destinatarios as $destinatario):
+                    if( $validate->email( $destinatario['email'] ) ) {
+                        $CakeEmail = new CakeEmail('smtp');
+
+                        $CakeEmail->template( 'newsletter', $this->Newsletter['Template']['file'] )
+                        ->emailFormat('html')
+                        // ->name(  )
+                        ->to( array( $destinatario['email'], $destinatario['nome']) )
+                        ->subject( $this->Newsletter['Newsletter']['subject'] )
+                        ->viewVars(
+                            array(
+                                'message' => $this->Newsletter['Newsletter']['emailbody'],
+                                'show_full_html'=>false
+                            )
+                        );
+
+                        if(!$CakeEmail->send()){
+                            $this->sended = false;
+                            $this->setLog("Não foi possível enviar a Newsletter #".$this->Newsletter['Newsletter']['id']." para o email ".$destinatario['email']);
+                        }else{
+                            $ids_queue[] = $destinatario['id']; // guarda o ID do usuáiro que recebeu o email, para eliminar da lista
+                        }// end CakeMail->send()
+
+                        sleep(5); // Aguarda 5 segundos antes de enviar o próximo email ( BUG DO SMTP )
                     }
+                endforeach;
+
+                // A newsletter foi "teoricamente" enviada para os emails da lista, então cria/atualiza um Log de registro
+
+                $sent = !empty($this->Newsletter['Log']['sent']) ? $this->Newsletter['Log']['sent'] : 0; //Enviadas até o momento
+                $sent += count($ids_queue); // Atualiza o contador com o total de emails enviados na última remessa
+
+                $ModelLog = ClassRegistry::init('Log');
+                if( empty($this->Newsletter['Log']['id']) ){
+                    $ModelLog->create();
+                    $ModelLog->set('start_sending', date('Y-m-d H:i:s'));
+                }else{
+                    $ModelLog->id = $this->Newsletter['Log']['id'];
+                    $sent         = $this->Newsletter['Log']['sent'];
                 }
 
-                // Grava o primeiro email como destinatário principal e remove-o da lista
-                $send_to = array_slice( $lista_de_destinatarios, 0,1 );
-                unset( $lista_de_destinatarios[ key($send_to) ] );
-                // die( current($send_to[0]) );
-                // print_r($send_to);exit();
+                $ModelLog->set('newsletter_id', $this->Newsletter['Newsletter']['id']);
+                $ModelLog->set('sent', $sent); // Contador de newsletters enviadas
+                $ModelLog->save();
 
 
-                $CakeEmail = new CakeEmail('smtp');
-                $CakeEmail->to( $send_to[0] )
-                // ->from( current($send_to[0]) )
-                ->template('newsletter', $this->Newsletter['Template']['file'] )
-                ->bcc( $lista_de_destinatarios )
-                ->emailFormat('html')
-                ->subject( $this->Newsletter['Newsletter']['subject'] )
-                ->viewVars(
-                    array(
-                        'message' => $this->Newsletter['Newsletter']['emailbody'],
-                        // 'QueueId'=>$Queue['Queue']['id'],
-                        // 'send_to'=>$email['email'],
-                        'show_full_html'=>false
-                    )
-                );
-
-                if(!$CakeEmail->send()){
-                    $this->sended = false;
-                    $this->setLog("Email de ".$this->Newsletter['User']['nome']." na Newsletter # ".$this->Newsletter['Newsletter']['id']." falhou.");
-                    // $this->setLog("Email de ".$this->Newsletter['User']['nome']." enviado para ".$email['email']." na this->Newsletter # ".$this->Newsletter['Queue']['id']." falhou.");
+                // Limpa os emails da fila
+                $ModelEmail = ClassRegistry::init('Email');
+                if (!$ModelEmail->updateAll( array('Email.status'=>0), array('Email.id'=>$ids_queue) )) {
+                    $this->setLog("Não foi possível limpar a lista de emails que receberam a última newsletter");
                 }else{
-                    // A newsletter foi enviada, cria Log de registro
-
-                    $sent     = 0; //Enviadas até o momento
-                    $ModelLog = ClassRegistry::init('Log');
-
-                    if( empty($this->Newsletter['Log']) ){
-                        $ModelLog->create();
-                        $ModelLog->set('start_sending', date('Y-m-d H:i:s'));
-                    }else{
-                        $ModelLog->id = $this->Newsletter['Log'][0]['id'];
-                        $sent         = $this->Newsletter['Log'][0]['sent'];
-                    }
-
-                    $ModelLog->set('newsletter_id', $this->Newsletter['Newsletter']['id']);
-                    $ModelLog->set('sent', $sent + $this->total_destinatarios_sliced ); // Contador de newsletters enviadas
-                    $ModelLog->save();
+                    $this->setLog( count($ids_queue) ." emails foram excluídos da fila de espera");
+                }
 
 
-                    // Limpa os emails da fila
-                    $ModelQueue = ClassRegistry::init('Queue');
-                    $conditions = array(
-                        'newsletter_id'=>$this->Newsletter['Newsletter']['id'],
-                        'email_id'=>$ids_queue
-                    );
-
-                    if (!$ModelQueue->deleteAll($conditions,true)) {
-                        $this->setLog("Não foi possível excluir a lista de emails da fila de espera");
-                    }else{
-                        $this->setLog( count($ids_queue) ." emails foram excluídos da fila de espera");
-                    }
-
-
-                    $this->setLog("Newsletter # ".$this->Newsletter['Newsletter']['id'].' enviada em '.date('Y-m-d H:i:s'));
-                }// end CakeMail->send()
+                $this->setLog("Newsletter # ".$this->Newsletter['Newsletter']['id'].' enviada em '.date('Y-m-d H:i:s'));
             }//end total_destinatarios_in_queue > 0
         }else{
             $this->setLog("Não foi possível enviar a Newsletter");
@@ -356,7 +345,7 @@ class NewsletterdispatchComponent extends Component {
     }// end function send()
 
     /**
-    * Seleciona alguma newsletter na fila de envio para o dia atual
+    * Seleciona alguma newsletter na fila de envio para o dia atual ou pendentes dos dias anteriores
     * 
     * Seleciona apenas a primeira newsletter para evitar ultrapassar o limite de envio de emails do SMTP
     * 
@@ -370,17 +359,20 @@ class NewsletterdispatchComponent extends Component {
         $this->Newsletter = $ModelNewsletter->find('first', array(
             'conditions'=>array(
                 "`Newsletter`.`status` = '1'",
-                "CAST(Newsletter.date_send AS DATE) = CAST( NOW() AS DATE )"
+                "CAST(Newsletter.date_send AS DATE) <= CAST( NOW() AS DATE )"
             ),
             'order'=>'Newsletter.date_send ASC',
             'contain'=>array(
                 'User','Log','Template',
-                'Queue'=>array(
+                'Group'=>array(
                     'Email'=>array(
-                        'conditions'=>array("Email.status = '1'")/*,
-                        'limit'=>$this->max_sent_per_hour*/
-                        // A limitação do número de emails é feita na hora do envio
+                        'conditions'=>array("Email.status = '1'"),
+                        'limit'=>$this->max_sent_per_hour
                     )
+                ),
+                'Email'=>array(
+                    'conditions'=>array("Email.status = '1'"),
+                    'limit'=>$this->max_sent_per_hour
                 )
             )
         ));
@@ -404,9 +396,39 @@ class NewsletterdispatchComponent extends Component {
         // Só realiza a operação se tiver alguma newsletter na fila de envio
         if($this->proceed){
             /**
-             * Procura os emails dos grupos e monta uma lista de emails únicos para enviar
+             * Procura os emails dos grupos e monta uma lista de emails únicos para enviar fazendo a filtragem de quantidade máxima de emails
             */
-            $this->total_destinatarios_in_queue = count($this->Newsletter['Queue']);
+            $i = 0; //contador geral
+            
+            // armazena os emails na lista
+            if(!empty($this->Newsletter['Email'])):
+                foreach ($this->Newsletter['Email'] as $email) {
+                    if( !in_array_r($email['Email']['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
+
+                        $this->destinatarios[$i]['email'] = $email['Email']['email'];
+                        $this->destinatarios[$i]['nome']  = $email['Email']['nome'];
+                        $this->destinatarios[$i]['id']    = $email['Email']['id'];
+                        $i++;
+                    }
+                }
+            endif;
+
+            // Procura emails na lista de grupos
+            if(!empty($this->Newsletter['Group'])):
+                foreach ($this->Newsletter['Group'] as $group) {
+                    foreach ($group['Email'] as $email){
+                        if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
+
+                            $this->destinatarios[$i]['email'] = $email['email'];
+                            $this->destinatarios[$i]['nome']  = $email['nome'];
+                            $this->destinatarios[$i]['id']    = $email['id'];
+                            $i++;
+                        }
+                    }
+                }
+            endif;
+
+            $this->total_destinatarios_in_queue = count($this->destinatarios);
             $this->setLog('Total de destinatários disponíveis para envio da news: '.$this->total_destinatarios_in_queue);
             
             if( $this->total_destinatarios_in_queue == 0 ){
@@ -414,13 +436,15 @@ class NewsletterdispatchComponent extends Component {
                 // e desativa a newsletter da fila de envio
                 $this->proceed = false;
                 $this->disableNewsletterQueue();
+                $this->refreshEmailQueue();
 
-            }else{
+            }
+            /*else{
                 // pega o máximo de emails que pode receber a newsletter, por hora
                 $this->destinatarios = array_slice($this->Newsletter['Queue'], 0, $this->max_sent_per_hour); 
                 $this->total_destinatarios_sliced = count($this->destinatarios);
-            }
-            unset($this->Newsletter['Queue']); //Limpa o array de emails e grupos para liberar memoria
+            }*/
+            // unset($this->Newsletter['Queue']); //Limpa o array de emails e grupos para liberar memoria
         }
     } //end getDestinatarios()
 
@@ -439,8 +463,31 @@ class NewsletterdispatchComponent extends Component {
         }else{
             $this->setLog( __('A newsletter # %s foi enviada para todos os remetentes e foi desabilitada. ', $this->Newsletter['Newsletter']['id'] ));
 
+            // Atualiza o log com a data em que terminou de enviar a newsletter
+            if( !empty($this->Newsletter['Log']['id']) ){
+                $ModelNewsletter->Log->id = $this->Newsletter['Log']['id'];
+                $ModelNewsletter->Log->set('end_sending',date('Y-m-d H:i:s'));
+                $ModelNewsletter->Log->save();
+            }
         }
     } //end disableNewsletterQueue()
+
+    /**
+    * Reseta a lista de emails deixando-as disponíveis para novo envio
+    * 
+    * @access private
+    * @return void
+    */
+    private function refreshEmailQueue(){
+        $ModelEmail     = ClassRegistry::init('Email');
+        // $ModelEmail->id = $this->Newsletter['Newsletter']['id'];
+
+        if (!$ModelEmail->updateAll( array('status'=>true) )) {
+            $this->setLog( 'Não foi possível resetar a lista de email');
+        }else{
+            $this->setLog('Lista de emails está disponível para recebimento de nova newsletter.');
+        }
+    } //end refreshEmailQueue()
 
 
 

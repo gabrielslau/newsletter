@@ -1,4 +1,4 @@
-<div class="mws-panel grid_8 newsletters">
+<div class="mws-panel grid_8 newslettersssss newslettersgroups">
 	<div class="mws-panel-header">
     	<span class="mws-i-24 i-list">Newsletters</span>
     </div>
@@ -20,7 +20,7 @@
 					<thead>
 						<tr class="thead">
 							<th class="sorting"><?php echo $this->Paginator->sort('subject','Assunto');?></th>
-							<th class="sorting"><?php echo $this->Paginator->sort('emailbody','Conteúdo');?></th>
+							<th >Grupos de email</th>
 							<th class="sorting"><?php echo $this->Paginator->sort('date_send','Data de envio');?></th>
 							<!-- <th>&nbsp;</th> -->
 						</tr>
@@ -29,19 +29,34 @@
 					<?php
 					$i = 0;
 					foreach ($newsletters as $newsletter):
-						$class = (++$i % 2 == 0) ? ' class="gradeA odd"' : ' class="gradeA even"';
+						$class = (++$i % 2 == 0) ? ' class="odd"' : ' class="even"';
 					?>
 					<tr <?php echo $class;?>>
-						<td class="column-titulo options">
+						<td>
 							<?php 
 								echo '<strong>'.( ( $newsletter['Newsletter']['status'] == 0 ) ? $newsletter['Newsletter']['subject'] : $this->Html->link( $newsletter['Newsletter']['subject'], array('action' => 'edit', $newsletter['Newsletter']['id']) ) ).'</strong> ';
 
 								if( $newsletter['Newsletter']['status'] == 0 ) echo ' <small><span class="hg-gray">Somente visualização</span></small>';
 							?>
 						</td>
-						<td><?php echo limit_words(strip_tags($newsletter['Newsletter']['emailbody']),27); ?>...</td>
-						<td>
-							<div class="date" style="padding:10px;text-align:center">
+						<td class="column-actions"  style="text-align:center;width:130px">
+							<?php 
+								if(empty($newsletter['Group'])){
+								echo '<span class="hg-gray">-</span>';
+								}else{
+									foreach ($newsletter['Group'] as $emailgroup) {
+										echo  ' <span class="hg-yellow">'. 
+
+										$this->Html->link( utf8_decode($emailgroup['nome']) , array('controller'=>'groups','action' => 'view', $emailgroup['id']))
+
+										.'</span> ' ;
+										// echo  ' <span class="hg-yellow">'. utf8_decode($group['nome']).'</span> ' ;
+									}
+								}
+							?>
+						</td>
+						<td class="column-actions" style="text-align:center">
+							<div class="date" style="padding:10px">
 							<?php 
 								echo getDay($newsletter['Newsletter']['date_send']).'-';
 								echo getMesAbr( getMonth($newsletter['Newsletter']['date_send']) ).'-';

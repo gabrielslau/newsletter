@@ -61,8 +61,14 @@
 							if(empty($email['Group'])){
 								echo '<span class="hg-gray">-</span>';
 							}else{
-								foreach ($email['Group'] as $group) {
-									echo  ' <span class="hg-yellow">'. $group['nome'].'</span> ' ;
+								foreach ($email['Group'] as $emailgroup) {
+									echo  ' <span class="hg-yellow">'. 
+
+										$this->Html->link( utf8_decode($emailgroup['nome']) , array('controller'=>'groups','action' => 'view', $emailgroup['id']))
+
+										.'</span> ' ;
+
+									// echo  ' <span class="hg-yellow">'. utf8_decode($group['nome']).'</span> ' ;
 								}
 							}
 						?>

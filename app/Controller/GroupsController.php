@@ -24,17 +24,52 @@ class GroupsController extends AppController {
 		$this->set(compact('css_for_layout'));
 	}
 
-	function view($id = null) {
-		if (!$id) {
-			$this->Session->setFlash(sprintf(__('%s inválido.', true), 'Group'));
-			$this->redirect(array('action' => 'index'));
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
+	public function view($id = null) {
+		$this->Group->id = $id;
+		if (!$this->Group->exists()) {
+			throw new NotFoundException(__('Grupo inválido'));
 		}
-		$this->set('group', $this->Group->read(null, $id));
+
+		// $this->set('group', $this->Group->read(null, $id));
+
+		$this->paginate['conditions'] = array('Group.id'=>$id);
+		$emails  = $this->paginate('Email');
+
+		// Scripts da página
+		$css_for_layout = array('plugins/chosen/chosen','admin/core/button', 'View/newsletters/newsletters_index');
+		$js_for_layout  = array('plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min','plugins/chosen/chosen.jquery.min', 'View/newsletters/index');
+
+		$this->set(compact('css_for_layout','js_for_layout','emails'));
 	}
+
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
+	function index($email=null) {
+		$this->paginate['cache'] = true;
+		if(!empty($email)) $this->paginate['conditions'] = array('email'=>$email);
+		$emails                  = $this->paginate();
+		// $groups               = $this->Email->Group->find('list');
+		$groups                  = $this->Email->Group->find('list',array('order'=>'nome ASC'));
+
+		// Scripts da página
+		$css_for_layout = array('plugins/chosen/chosen','admin/core/button', 'View/newsletters/newsletters_index');
+		$js_for_layout  = array('plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min','plugins/chosen/chosen.jquery.min', 'View/newsletters/index');
+		
+		$this->set(compact('css_for_layout','js_for_layout','emails','groups'));
+	}//end index
 
 	function add() {
 		$sessao_formulario = $this->Session->read('DadosGroupAdd'); // Sessão com os dados do formulário
-		if ($this->request->is('post')) {
+		if ($this->request->is('post') || $this->request->is('put')) {
+			// print_r($this->request->data);exit();
 			$this->Session->write('DadosGroupAdd.Group', $this->request->data['Group']);
 			
 			$this->Group->set($this->request->data);
