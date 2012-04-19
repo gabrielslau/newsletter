@@ -1,4 +1,9 @@
 <?php
+App::uses('AppModel', 'Model');
+/**
+ * GroupsEmail Model
+ *
+ */
 class GroupsEmail extends AppModel {
 	var $name = 'GroupsEmail';
 	var $primaryKey = 'group_id';
@@ -27,7 +32,7 @@ class GroupsEmail extends AppModel {
 	);
 	// As associações abaixo foram criadas com todas as chaves possíveis, então é possível remover as que não são necessárias
 
-	var $belongsTo = array(
+	public $belongsTo = array(
 		'Group' => array(
 			'className' => 'Group',
 			'foreignKey' => 'group_id',

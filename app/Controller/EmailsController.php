@@ -22,7 +22,7 @@ class EmailsController extends AppController {
 	 */
 	function validatelist() {
 		$this->autoRender = false;
-
+//$this->request->params['categoria']
 		App::uses('Validation', 'Utility');
 
 		$validate = new Validation();

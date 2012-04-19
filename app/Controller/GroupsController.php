@@ -7,7 +7,30 @@ App::uses('AppController', 'Controller');
  */
 class GroupsController extends AppController {
 
-	public $paginate;
+	// public $paginate;
+	public $paginate = array(
+			'Email' => array(
+				'limit' => 20, 
+				'recursive'=>1,
+				'contain'=>array('Group'),
+				'joins' => array( 
+			        array( 
+			            'table' => 'groups_emails', 
+			            'alias' => 'GroupsEmail', 
+			            'type' => 'inner',  
+			            'conditions'=> array('GroupsEmail.email_id = Email.id') 
+			        ), 
+			        array( 
+			            'table' => 'groups', 
+			            'alias' => 'Group', 
+			            'type' => 'inner',  
+			            'conditions'=> array( 
+			                'Group.id = GroupsEmail.group_id'
+			            ) 
+			        )
+        		)
+			)
+		);
 
 	/**
 	 * index method
@@ -27,6 +50,8 @@ class GroupsController extends AppController {
 	/**
 	 * index method
 	 *
+	 * Faz a paginação dos emails que pertendem a um determinado grupo
+	 * 
 	 * @return void
 	 */
 	public function view($id = null) {
@@ -34,11 +59,14 @@ class GroupsController extends AppController {
 		if (!$this->Group->exists()) {
 			throw new NotFoundException(__('Grupo inválido'));
 		}
+		$this->Group->recursive = 0;
+		$this->set('group', $this->Group->read(null, $id));
 
-		// $this->set('group', $this->Group->read(null, $id));
+		$this->Group->Email->Behaviors->attach('Containable');	
+		$emails = $this->paginate('Email',array('Group.id'=>$id));
 
-		$this->paginate['conditions'] = array('Group.id'=>$id);
-		$emails  = $this->paginate('Email');
+
+		// print_r($emails);exit();
 
 		// Scripts da página
 		$css_for_layout = array('plugins/chosen/chosen','admin/core/button', 'View/newsletters/newsletters_index');
@@ -47,24 +75,6 @@ class GroupsController extends AppController {
 		$this->set(compact('css_for_layout','js_for_layout','emails'));
 	}
 
-	/**
-	 * index method
-	 *
-	 * @return void
-	 */
-	function index($email=null) {
-		$this->paginate['cache'] = true;
-		if(!empty($email)) $this->paginate['conditions'] = array('email'=>$email);
-		$emails                  = $this->paginate();
-		// $groups               = $this->Email->Group->find('list');
-		$groups                  = $this->Email->Group->find('list',array('order'=>'nome ASC'));
-
-		// Scripts da página
-		$css_for_layout = array('plugins/chosen/chosen','admin/core/button', 'View/newsletters/newsletters_index');
-		$js_for_layout  = array('plugins/swfobject','plugins/uploadify/jquery.uploadify.v2.1.4.min','plugins/chosen/chosen.jquery.min', 'View/newsletters/index');
-		
-		$this->set(compact('css_for_layout','js_for_layout','emails','groups'));
-	}//end index
 
 	function add() {
 		$sessao_formulario = $this->Session->read('DadosGroupAdd'); // Sessão com os dados do formulário

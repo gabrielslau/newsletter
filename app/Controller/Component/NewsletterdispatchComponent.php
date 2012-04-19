@@ -266,9 +266,9 @@ class NewsletterdispatchComponent extends Component {
         $this->getDestinatarios();      // Lista de emails nos grupos selecionados que faltam receber a newsletter
         
         if( $this->proceed ){
-            $this->setLog("Pronto pra mandar a news #".$this->Newsletter['Newsletter']['id']);
 
             if($this->total_destinatarios_in_queue > 0){
+                $this->setLog("Pronto pra mandar a news #".$this->Newsletter['Newsletter']['id']);
                
                 /**
                  * Manda o email para a lista de emails selecionados
@@ -282,29 +282,41 @@ class NewsletterdispatchComponent extends Component {
                 
                 // Envia a Newsletter para cada usuário da lista
                 foreach ($this->destinatarios as $destinatario):
-                    if( $validate->email( $destinatario['email'] ) ) {
+                    if( $validate->email( $destinatario['email'], true) ) {
                         $CakeEmail = new CakeEmail('smtp');
-
+                        // die($destinatario['email']);exit();
                         $CakeEmail->template( 'newsletter', $this->Newsletter['Template']['file'] )
                         ->emailFormat('html')
                         // ->name(  )
-                        ->to( array( $destinatario['email'], $destinatario['nome']) )
+                        ->to( $destinatario['email'] )
                         ->subject( $this->Newsletter['Newsletter']['subject'] )
                         ->viewVars(
                             array(
                                 'message' => $this->Newsletter['Newsletter']['emailbody'],
+                                'unsubscribe_id' => $destinatario['email'],
+                                'NewslettersId' => $this->Newsletter['Newsletter']['id'],
                                 'show_full_html'=>false
                             )
                         );
 
-                        if(!$CakeEmail->send()){
+                        $sendResult = $CakeEmail->send();
+
+                        if(!$sendResult){
                             $this->sended = false;
                             $this->setLog("Não foi possível enviar a Newsletter #".$this->Newsletter['Newsletter']['id']." para o email ".$destinatario['email']);
                         }else{
                             $ids_queue[] = $destinatario['id']; // guarda o ID do usuáiro que recebeu o email, para eliminar da lista
+                            
+                            $ModelEmail = ClassRegistry::init('Email');
+                            $ModelEmail->id = $destinatario['id'];
+                            $ModelEmail->saveField( 'status' , "'0'");
+
+                            $this->setLog("Email enviado com sucesso para ".$destinatario['email']);
                         }// end CakeMail->send()
 
-                        sleep(5); // Aguarda 5 segundos antes de enviar o próximo email ( BUG DO SMTP )
+                        sleep(2); // Aguarda 5 segundos antes de enviar o próximo email ( BUG DO SMTP )
+                    }else{
+                        $this->setLog("O Email ".$destinatario['email']." não é válido");
                     }
                 endforeach;
 
@@ -338,6 +350,13 @@ class NewsletterdispatchComponent extends Component {
 
                 $this->setLog("Newsletter # ".$this->Newsletter['Newsletter']['id'].' enviada em '.date('Y-m-d H:i:s'));
             }//end total_destinatarios_in_queue > 0
+            else{
+                // Se não tiver emails para o envio da news, impede que as outras operações sejam realizadas
+                // e desativa a newsletter da fila de envio
+                $this->proceed = false;
+                $this->disableNewsletterQueue();
+                $this->refreshEmailQueue();
+            }
         }else{
             $this->setLog("Não foi possível enviar a Newsletter");
             return false;
@@ -402,12 +421,13 @@ class NewsletterdispatchComponent extends Component {
             
             // armazena os emails na lista
             if(!empty($this->Newsletter['Email'])):
+                // print_r($this->Newsletter);exit();
                 foreach ($this->Newsletter['Email'] as $email) {
-                    if( !in_array_r($email['Email']['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
+                    if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour ){
 
-                        $this->destinatarios[$i]['email'] = $email['Email']['email'];
-                        $this->destinatarios[$i]['nome']  = $email['Email']['nome'];
-                        $this->destinatarios[$i]['id']    = $email['Email']['id'];
+                        $this->destinatarios[$i]['email'] = $email['email'];
+                        $this->destinatarios[$i]['nome']  = $email['nome'];
+                        $this->destinatarios[$i]['id']    = $email['id'];
                         $i++;
                     }
                 }
@@ -430,6 +450,10 @@ class NewsletterdispatchComponent extends Component {
 
             $this->total_destinatarios_in_queue = count($this->destinatarios);
             $this->setLog('Total de destinatários disponíveis para envio da news: '.$this->total_destinatarios_in_queue);
+            /*if($this->total_destinatarios_in_queue < 10){
+                //Para ver porque não envia para os últimos
+                $this->setLog('Últimos destinatários disponíveis para envio da news: '.implode_r(array('pieces'=>$this->destinatarios,'glue'=>'<br />')));
+            }*/
             
             if( $this->total_destinatarios_in_queue == 0 ){
                 // Se não tiver emails para o envio da news, impede que as outras operações sejam realizadas

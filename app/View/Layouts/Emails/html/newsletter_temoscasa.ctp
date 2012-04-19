@@ -32,14 +32,18 @@
 			</div>
 		</div>
 
-		
+		'.((isset($unsubscribe_id) && !empty($unsubscribe_id)) ?
+		$content_for_layout.= '<div style="width:600px;margin:0 auto;font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#fff;">
+			<p>Não quer mais receber emails? Você pode '. $this->Html->link('cancelar aqui', array('controller'=>'emails','action'=>'unsubscribe',base64_encode($unsubscribe_id))) .'.</p>
+			<p>Este email foi enviado para: '.$unsubscribe_id.'</p>
+		</div>'
+	: '').'
 
 	</div>';
 
-	/*<div style="width:600px;margin:0 auto;font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#fff;">
-			<p>Não quer mais receber emails? Você pode cancelar aqui.</p>
-			<p>Este email foi enviado para: </p>
-		</div>*/
+	
+
+	
 
 if( $show_full_html ){
 	echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -53,6 +57,14 @@ if( $show_full_html ){
 	</body>
 	</html>';
 }else{
-	echo isset($NewslettersqueueId) ? '<div align="center" style="padding:10px;background:#fff;font-size:12px;font-family:Arial, Helvetica, sans-serif">Visualizar esta mensagem '. $this->Html->link('no navegador web', array('controller'=>'newsletters','action'=>'view',$NewslettersqueueId,true)) .'</div>' : '';
+	echo isset($NewslettersId) ? '<div align="center" style="padding:10px;background:#fff;font-size:12px;font-family:Arial, Helvetica, sans-serif">Visualizar esta mensagem '. '<a href="'.$this->Html->url(array('controller'=>'newsletters','action'=>'view',$NewslettersId),true).'">no navegador web</a>' .'</div>' : '';
+	
 	echo $content;
+	
+	if(isset($unsubscribe_id) && !empty($unsubscribe_id)) {
+		echo '<div style="margin:0 auto;font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#333; text-align:center">
+			<p>Deseja cancelar o recebimento de nossos informativos? Você pode '. '<a href="'.$this->Html->url(array('controller'=>'emails','action'=>'unsubscribe',base64_encode($unsubscribe_id)),true).'">cancelar aqui</a>'.'.<br />
+			Este email foi enviado para: '.$unsubscribe_id.'</p>
+		</div>';
+	}
 }
