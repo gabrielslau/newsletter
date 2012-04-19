@@ -204,13 +204,13 @@ class NewsletterdispatchComponent extends Component {
     var $Queue;
 
 
-    /**
-     * Init or re-init all the processing variables to their default values
-     *
-     * This function is called in the constructor, and after each call of {@link process}
-     *
-     * @access private
-     */
+/**
+ * Init or re-init all the processing variables to their default values
+ *
+ * This function is called in the constructor, and after each call of {@link process}
+ *
+ * @access private
+ */
     function initialize(&$controller, $settings = array()){
         // saving the controller reference for later use
         $this->controller = $controller;
@@ -252,16 +252,16 @@ class NewsletterdispatchComponent extends Component {
     }
 
 
-    /**
-     * Envia a newsletter para os grupos de emails selecionados
-     * 
-     * @uses Newsletter::reset()
-     * @uses Newsletter::getNewslettersQueue()
-     * @access public
-     *
-     * @return boolean : Enviou ou não?
-     */
-    public function send(){
+/**
+ * Envia a newsletter para os grupos de emails selecionados
+ * 
+ * @uses Newsletter::reset()
+ * @uses Newsletter::getNewslettersQueue()
+ * @access public
+ *
+ * @return boolean : Enviou ou não?
+ */
+    function send(){
         $this->getNewslettersQueue();   // Newsletters na fila para enviar
         $this->getDestinatarios();      // Lista de emails nos grupos selecionados que faltam receber a newsletter
         
@@ -363,15 +363,15 @@ class NewsletterdispatchComponent extends Component {
         }
     }// end function send()
 
-    /**
-    * Seleciona alguma newsletter na fila de envio para o dia atual ou pendentes dos dias anteriores
-    * 
-    * Seleciona apenas a primeira newsletter para evitar ultrapassar o limite de envio de emails do SMTP
-    * 
-    * @access public
-    * @return void
-    */
-    public function getNewslettersQueue(){
+/**
+* Seleciona alguma newsletter na fila de envio para o dia atual ou pendentes dos dias anteriores
+* 
+* Seleciona apenas a primeira newsletter para evitar ultrapassar o limite de envio de emails do SMTP
+* 
+* @access public
+* @return void
+*/
+    function getNewslettersQueue(){
         $ModelNewsletter       = ClassRegistry::init('Newsletter');
 
         $ModelNewsletter->Behaviors->attach('Containable');
@@ -405,13 +405,14 @@ class NewsletterdispatchComponent extends Component {
         if($this->total_newsletters == 0) $this->proceed = false; 
     } //end getNewslettersQueue
 
-    /**
-    * Pega o total de emails nos grupos que faltam receber a newsletter
-    * 
-    * @access public
-    * @return void
-    */
-    public function getDestinatarios(){
+
+/**
+* Pega o total de emails nos grupos que faltam receber a newsletter
+* 
+* @access public
+* @return void
+*/
+    function getDestinatarios(){
         // Só realiza a operação se tiver alguma newsletter na fila de envio
         if($this->proceed){
             /**
@@ -421,7 +422,6 @@ class NewsletterdispatchComponent extends Component {
             App::uses('Validation', 'Utility');
             $validate = new Validation();
 
-            if( $validate->email( $destinatario['email'], true) ) {
             
             // armazena os emails na lista
             if(!empty($this->Newsletter['Email'])):
@@ -467,22 +467,17 @@ class NewsletterdispatchComponent extends Component {
                 $this->refreshEmailQueue();
 
             }
-            /*else{
-                // pega o máximo de emails que pode receber a newsletter, por hora
-                $this->destinatarios = array_slice($this->Newsletter['Queue'], 0, $this->max_sent_per_hour); 
-                $this->total_destinatarios_sliced = count($this->destinatarios);
-            }*/
-            // unset($this->Newsletter['Queue']); //Limpa o array de emails e grupos para liberar memoria
+
         }
     } //end getDestinatarios()
 
-    /**
-    * Desabilita a newsletter atual
-    * 
-    * @access private
-    * @return void
-    */
-    private function disableNewsletterQueue(){
+/**
+* Desabilita a newsletter atual
+* 
+* @access private
+* @return void
+*/
+    function disableNewsletterQueue(){
         $ModelNewsletter     = ClassRegistry::init('Newsletter');
         $ModelNewsletter->id = $this->Newsletter['Newsletter']['id'];
 
@@ -500,13 +495,13 @@ class NewsletterdispatchComponent extends Component {
         }
     } //end disableNewsletterQueue()
 
-    /**
-    * Reseta a lista de emails deixando-as disponíveis para novo envio
-    * 
-    * @access private
-    * @return void
-    */
-    private function refreshEmailQueue(){
+/**
+* Reseta a lista de emails deixando-as disponíveis para novo envio
+* 
+* @access private
+* @return void
+*/
+    function refreshEmailQueue(){
         $ModelEmail     = ClassRegistry::init('Email');
         // $ModelEmail->id = $this->Newsletter['Newsletter']['id'];
 
@@ -518,89 +513,28 @@ class NewsletterdispatchComponent extends Component {
     } //end refreshEmailQueue()
 
 
-
-    /**
-    * Atualiza o contador da quantidade de newsletters enviadas
-    * 
-    * @access private
-    */
-    private function upCountNews($id=null,$count=0){
-        if($this->proceed){
-
-            if(!$this->total_enviados>0){
-                $this->Log->create();
-                $this->Log->set('newslettersqueue_id', $id);
-                $this->Log->set('numero_enviados', $count);
-                $this->Log->set('sended', date('Y-m-d H:i:s'));
-                $this->Log->save();
-                // die('ENVIDAOS >! 0');
-            }else{
-                $this->Log->id = $this->id_enviada;
-                $this->Log->set('newslettersqueue_id', $id);
-                $this->Log->saveField('numero_enviados',$count);
-                // die('ENVIADOS > 0');
-            }
-            
-            //$this->Queue->save();
-            $this->log[] = 'Total de newsletters enviadas em '.$this->data_atual.' atualizado para '.$count;
-            CakeLog::write("debug", 'Total de newsletters enviadas em '.$this->data_atual.' atualizado para '.$count);
-            // die('LOG');
-        }
-        // die('TESTE');
-    }
-
-    /**
-    * Pega o total de newslleters que já foram enviadas hoje
-    * 
-    * @access private
-    *
-    * @return integer : Total de enviados
-    */
-/*    function getTotalEnviadasHoje(){
-        //$tablename = $Log->table;
-        $options['fields'] = array('id',"numero_enviados",'newslettersqueue_id');
-        $options['recursive'] = -1;
-        $options['conditions'] = array(
-            // "DATE_FORMAT(`sended`,'%d/%m/%Y') = DATE_FORMAT(NOW(),'%d/%m/%Y')"
-            "CAST(sended AS DATE) = CAST( NOW() AS DATE )"
-        );
-        //$this->total_enviados = $Log->find('count',$options);
-        $enviadas = $this->Log->find('first',$options);
-        // $log = $this->Log->getDataSource()->getLog();debug($log);exit;
-        $this->total_enviados = ($enviadas['Log']['numero_enviados'] > 0 ? $enviadas['Log']['numero_enviados'] : 0);
-        $this->id_enviada = $enviadas['Log']['id'];
-        $this->id_newsagendada = $enviadas['Log']['newslettersqueue_id'];
-        $this->log[] = '<b>Total de newsletters enviadas hoje:</b> '.$this->total_enviados;
-        CakeLog::write("debug", "Total de newsletters enviadas hoje: ".$this->total_enviados);
-    }
+/**
+* Guarda as mensagens de log do sistema
+*
+* @access private
+* @uses CakeLog::write()
+* @return void
 */
-
-
-
-
-
-    /**
-    * Guarda as mensagens de log do sistema
-    *
-    * @access private
-    * @uses CakeLog::write()
-    * @return void
-    */
-    private function setLog($mensagem=null){
+    function setLog($mensagem=null){
         if(!empty($mensagem)){
             $this->log[] = $mensagem;
             CakeLog::write("debug", $mensagem);
         }
     }
 
-    /**
-    * Retorna as mensagens do sistema
-    *
-    * @access public
-    * @uses Bootstrap::implode_r()
-    * @return string HTML das mensagens geradas pelo sistema
-    */
-    public function getLog(){
+/**
+* Retorna as mensagens do sistema
+*
+* @access public
+* @uses Bootstrap::implode_r()
+* @return string HTML das mensagens geradas pelo sistema
+*/
+    function getLog(){
         return !empty($this->log) ? implode_r(array('pieces'=>$this->log,'glue'=>'<br />')) : '';
     }
 
