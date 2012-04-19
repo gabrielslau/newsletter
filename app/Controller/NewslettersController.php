@@ -18,6 +18,19 @@ class NewslettersController extends AppController {
 		$this->Auth->allowedActions = array('view','newsletter_dispatch');
 	}
 
+	/*public function disableEmails(){
+		$this->autoRender = false;
+		$this->layout = 'ajax';
+		$listaemails = 'divacdutra@hotmail.com;drogariaserido@hotmail.com;drogcdutra@hotmail.com;farmanorte.natal@hotmail.com;marciokleber@ig.com.br;sebarofi@bol.com.br;sahn@ig.com.br;suerdadutra@yahoo.com.br;vmcbezerra@yahoo.com.br;windson_paz@hotmail.com;alvesmichelle@hotmail.com;fabio.farma@hotmail.com;drogariasantissimamaria@hotmail.com;drogavista@hotmail.com;farm.guadalupe@gmail.com;farmaciachacon2@oi.com.br;jpwanderlei@ig.com.br;jusa.lula@ig.com.br;camillazevedo@hotmail.com;drog.2anas@hotmail.com;drogariadetodos@hotmail.com;drogariaparque@hotmail.com;farconfianca@hotmail.com;ivan.jmf@ig.com.br;j.tavaresme@hotmail.com;jdavim@interjato.com.br;joaopaulo_fagundes@hotmail.com';
+		$listaemails = explode(';', $listaemails);
+		$this->Newsletter->Email->recursive = -1;
+
+		if($this->Newsletter->Email->updateAll(array("`Email`.`status`" => "'0'"), array('`Email`.`email`'=>$listaemails))){
+			echo 'OK';
+		}else echo 'POIA';
+
+		// $log = $this->Newsletter->Email->getDataSource()->getLog();debug($log);exit;
+	}*/
 
 	public function newsletter_dispatch(){
 		$this->autoRender = false;

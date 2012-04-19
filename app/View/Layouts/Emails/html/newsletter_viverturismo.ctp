@@ -62,7 +62,7 @@ if( $show_full_html ){
 	
 	if(isset($unsubscribe_id) && !empty($unsubscribe_id)) {
 		echo '<div style="margin:0 auto;font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#333; text-align:center">
-			<p>Deseja cancelar o recebimento de nossos informativos? Você pode '. '<a href="'.$this->Html->url(array('controller'=>'emails','action'=>'unsubscribe',base64_encode($unsubscribe_id)),true).'">cancelar aqui</a>'.'.<br />
+			<p>Nós respeitamos a sua privacidade. Se você não deseja mais receber nossos e-mails, '. '<a href="'.$this->Html->url(array('controller'=>'emails','action'=>'unsubscribe',base64_encode($unsubscribe_id)),true).'">cancele sua inscrição aqui</a>'.'.<br />
 			Este email foi enviado para: '.$unsubscribe_id.'</p>
 		</div>';
 	}

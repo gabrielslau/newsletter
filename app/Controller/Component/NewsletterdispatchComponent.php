@@ -216,7 +216,7 @@ class NewsletterdispatchComponent extends Component {
         $this->controller = $controller;
 
         // overiddable variables
-        $this->max_sent_per_hour   = 100;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
+        $this->max_sent_per_hour   = 50;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
         //$this->sec               = 10;            // Tempo entre o envio de um pacote e outro (em segundos)
         //$this->limitMail         = 500;           // Limite de emails por hora
         //$this->secLimitMail      = 2400;          // Tempo de pausa por hora (40 minutos = 2400 segundos)
@@ -276,13 +276,20 @@ class NewsletterdispatchComponent extends Component {
 
                 App::uses('CakeEmail', 'Network/Email');
                 App::uses('Validation', 'Utility');
+                App::uses('File', 'Utility');
 
-                $validate = new Validation();
-                $ids_queue = array();
+                $ModelEmail = ClassRegistry::init('Email');
+                $validate   = new Validation();
+                $ids_queue  = array();
+
+                $fileNewsletterLog = new File('files'.DS.'tmp'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
+                if(!$fileNewsletterLog->exists()){
+                    $fileNewsletterLog->create();
+                }
                 
                 // Envia a Newsletter para cada usuário da lista
                 foreach ($this->destinatarios as $destinatario):
-                    if( $validate->email( $destinatario['email'], true) ) {
+                    if( $validate->email( $destinatario['email']) && $this->proceed ) {
                         $CakeEmail = new CakeEmail('smtp');
                         // die($destinatario['email']);exit();
                         $CakeEmail->template( 'newsletter', $this->Newsletter['Template']['file'] )
@@ -307,9 +314,14 @@ class NewsletterdispatchComponent extends Component {
                         }else{
                             $ids_queue[] = $destinatario['id']; // guarda o ID do usuáiro que recebeu o email, para eliminar da lista
                             
-                            $ModelEmail = ClassRegistry::init('Email');
+                            $fileNewsletterLog->append($destinatario['id'].';'); //Adiciona o ID do email enviado no log da newsletter
+
+                            /*$ModelEmail->recursive = 0;
                             $ModelEmail->id = $destinatario['id'];
-                            $ModelEmail->saveField( 'status' , "'0'");
+                            if(!$ModelEmail->saveField( 'status' , "'0'")){
+                                $this->proceed = false;
+                                $this->setLog("Não foi possível desabilitar o email ".$destinatario['email']. ' no envio da newsletter #'.$this->Newsletter['Newsletter']['id']);
+                            }*/
 
                             $this->setLog("Email enviado com sucesso para ".$destinatario['email']);
                         }// end CakeMail->send()
@@ -319,6 +331,10 @@ class NewsletterdispatchComponent extends Component {
                         $this->setLog("O Email ".$destinatario['email']." não é válido");
                     }
                 endforeach;
+
+                $fileNewsletterLog->close();
+                // Limpa os emails da fila
+                // $this->disableEmailQueue($ids_queue);
 
                 // A newsletter foi "teoricamente" enviada para os emails da lista, então cria/atualiza um Log de registro
 
@@ -339,14 +355,7 @@ class NewsletterdispatchComponent extends Component {
                 $ModelLog->save();
 
 
-                // Limpa os emails da fila
-                $ModelEmail = ClassRegistry::init('Email');
-                if (!$ModelEmail->updateAll( array('Email.status'=>0), array('Email.id'=>$ids_queue) )) {
-                    $this->setLog("Não foi possível limpar a lista de emails que receberam a última newsletter");
-                }else{
-                    $this->setLog( count($ids_queue) ." emails foram excluídos da fila de espera");
-                }
-
+                
 
                 $this->setLog("Newsletter # ".$this->Newsletter['Newsletter']['id'].' enviada em '.date('Y-m-d H:i:s'));
             }//end total_destinatarios_in_queue > 0
@@ -374,6 +383,7 @@ class NewsletterdispatchComponent extends Component {
     function getNewslettersQueue(){
         $ModelNewsletter       = ClassRegistry::init('Newsletter');
 
+
         $ModelNewsletter->Behaviors->attach('Containable');
         $this->Newsletter = $ModelNewsletter->find('first', array(
             'conditions'=>array(
@@ -382,7 +392,7 @@ class NewsletterdispatchComponent extends Component {
             ),
             'order'=>'Newsletter.date_send ASC',
             'contain'=>array(
-                'User','Log','Template',
+                'User','Log','Template'/*,
                 'Group'=>array(
                     'Email'=>array(
                         'conditions'=>array("Email.status = '1'"),
@@ -392,7 +402,7 @@ class NewsletterdispatchComponent extends Component {
                 'Email'=>array(
                     'conditions'=>array("Email.status = '1'"),
                     'limit'=>$this->max_sent_per_hour
-                )
+                )*/
             )
         ));
         // print_r($this->Newsletter);exit();
@@ -415,18 +425,87 @@ class NewsletterdispatchComponent extends Component {
     function getDestinatarios(){
         // Só realiza a operação se tiver alguma newsletter na fila de envio
         if($this->proceed){
+            // Retorna os emails associados a newsletter
+            
+            $ModelNewsletter = ClassRegistry::init('Newsletter');
+            $conditionsForEmails = array("Email.status = '1'");
+
+            // Verifica se há algum arquivo de registro de emails que receberam a newsletter e adiciona no filtro
+            // Esse arquivo guarda os IDs dos emails que receberam a newsletter, reparados por VIRGULA (,)
+            App::uses('File', 'Utility');
+            $fileNewsletterLog = new File('files'.DS.'tmp'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
+
+            if($fileNewsletterLog->exists()){
+                $content = $fileNewsletterLog->read();
+                if($content){
+                    $content = explode(';', $content);
+                    $content = array_filter($content, "checkEmpty"); //Limpa os campos vazios do array
+                    
+                    $conditionsForEmails = array(
+                        "Email.status = '1'",
+                        'NOT'=>array(
+                            'Email.id'=>$content
+                        )
+                    );
+                }
+            }
+
+            // Lista de Emails selecionados individualmente para a newsletter
+            $EmailsInNews = $ModelNewsletter->Email->find('all', array(
+                'joins' => array( 
+                    array( 
+                        'table' => 'newsletters_emails', 
+                        'alias' => 'NewslettersEmail', 
+                        'type' => 'inner',  
+                        'conditions'=> array(
+                            'NewslettersEmail.email_id = Email.id',
+                            "NewslettersEmail.newsletter_id = '".$this->Newsletter['Newsletter']['id']."'"
+                        ) 
+                    ),
+                ),
+                'conditions'=>$conditionsForEmails,
+                'limit'=>$this->max_sent_per_hour
+            ));
+
+            // Lista de Emails dos Grupos selecionados para a newsletter
+            $ModelNewsletter->Group->Behaviors->attach('Containable');
+            $GroupsInNews = $ModelNewsletter->Group->find('all',array(
+                'joins' => array( 
+                    array( 
+                        'table' => 'newsletters_groups', 
+                        'alias' => 'NewslettersGroup', 
+                        'type' => 'inner',  
+                        'conditions'=> array(
+                            'NewslettersGroup.group_id = Group.id',
+                            "NewslettersGroup.newsletter_id = '".$this->Newsletter['Newsletter']['id']."'"
+                        ) 
+                    ),
+                ),
+                'contain'=>array(
+                    'Email'=>array(
+                        'conditions'=>$conditionsForEmails,
+                        'limit'=>$this->max_sent_per_hour
+                    )
+                )
+            ));
+
+
+            // print_r($GroupsInNews);exit();
+
+
             /**
              * Procura os emails dos grupos e monta uma lista de emails únicos para enviar fazendo a filtragem de quantidade máxima de emails
             */
+
             $i = 0; //contador geral
             App::uses('Validation', 'Utility');
             $validate = new Validation();
 
             
             // armazena os emails na lista
-            if(!empty($this->Newsletter['Email'])):
+            if(!empty($EmailsInNews)):
                 // print_r($this->Newsletter);exit();
-                foreach ($this->Newsletter['Email'] as $email) {
+                foreach ($EmailsInNews as $email) {
                     if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
 
                         $this->destinatarios[$i]['email'] = $email['email'];
@@ -438,8 +517,8 @@ class NewsletterdispatchComponent extends Component {
             endif;
 
             // Procura emails na lista de grupos
-            if(!empty($this->Newsletter['Group'])):
-                foreach ($this->Newsletter['Group'] as $group) {
+            if(!empty($GroupsInNews)):
+                foreach ($GroupsInNews as $group) {
                     foreach ($group['Email'] as $email){
                         if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
 
@@ -454,10 +533,6 @@ class NewsletterdispatchComponent extends Component {
 
             $this->total_destinatarios_in_queue = count($this->destinatarios);
             $this->setLog('Total de destinatários disponíveis para envio da news: '.$this->total_destinatarios_in_queue);
-            /*if($this->total_destinatarios_in_queue < 10){
-                //Para ver porque não envia para os últimos
-                $this->setLog('Últimos destinatários disponíveis para envio da news: '.implode_r(array('pieces'=>$this->destinatarios,'glue'=>'<br />')));
-            }*/
             
             if( $this->total_destinatarios_in_queue == 0 ){
                 // Se não tiver emails para o envio da news, impede que as outras operações sejam realizadas
@@ -481,7 +556,7 @@ class NewsletterdispatchComponent extends Component {
         $ModelNewsletter     = ClassRegistry::init('Newsletter');
         $ModelNewsletter->id = $this->Newsletter['Newsletter']['id'];
 
-        if (!$ModelNewsletter->saveField('status',0)) {
+        if (!$ModelNewsletter->saveField('status',"'0'")) {
             $this->setLog( __('A Newsletter # %s não pôde ser desativada. ', $this->Newsletter['Newsletter']['id'] ));
         }else{
             $this->setLog( __('A newsletter # %s foi enviada para todos os remetentes e foi desabilitada. ', $this->Newsletter['Newsletter']['id'] ));
@@ -494,6 +569,26 @@ class NewsletterdispatchComponent extends Component {
             }
         }
     } //end disableNewsletterQueue()
+
+/**
+* Desativa alguns emails da lista de emails deixando-os temporariamente indisponíveis para novo envio
+* 
+* @access private
+* @return void
+*/
+    function disableEmailQueue($ids_queue=array()){
+        if(!empty($ids_queue)){
+            $ModelEmail     = ClassRegistry::init('Email');
+            
+            // Limpa os emails da fila
+            $ModelEmail = ClassRegistry::init('Email');
+            if (!$ModelEmail->updateAll( array("Email.status"=>"'0'"), array('Email.id'=>$ids_queue) )) {
+                $this->setLog("Não foi possível limpar a lista de emails que receberam a última newsletter");
+            }else{
+                $this->setLog( count($ids_queue) ." emails foram excluídos da fila de espera");
+            }
+        }
+    } //end refreshEmailQueue()
 
 /**
 * Reseta a lista de emails deixando-as disponíveis para novo envio
