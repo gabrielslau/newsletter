@@ -15,6 +15,7 @@ class EmailsController extends AppController {
 	);
 
 	public function beforeFilter(){
+		parent::beforeFilter();
 		//Ações permitidas se o usuário não estiver logado
 		$this->Auth->allowedActions = array('unsubscribe');
 	}

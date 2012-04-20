@@ -19,5 +19,5 @@
 		echo ( $numPaginas > $modulus && ($numPaginas - $paginaAtual >= 3) && $this->Paginator->hasNext()) ? $this->Paginator->last('último', array('class' => 'last paginate_button', 'tag'=>'span'), null, array('class' => 'paginate_button_disabled')) : '';
 	?>
 
-</ul><!-- end .paginator -->
+</div><!-- end .paginator -->
 <?php endif;?>

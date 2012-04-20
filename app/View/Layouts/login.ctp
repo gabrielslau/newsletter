@@ -34,13 +34,10 @@
 	$jsExternal_for_layout = isset($jsExternal_for_layout) ? $jsExternal_for_layout : array();
 	echo $this->element('estrutura/admin/scripts',array('js_for_layout'=>$js_for_layout,'jsExternal_for_layout'=>$jsExternal_for_layout,'scripts'=>array(
 		'jquery-1.7.1.min',
-		'jquery-ui-effecs.min',
-
 		//Plugin Scripts
-		'plugins/placeholder/jquery.placeholder-min',
-		'plugins/validate/jquery.validate-min', 
+		'plugins/placeholder/jquery.placeholder-min'
 
-		'admin/login' // Core script
+		// 'admin/login' // Core script
 	)));
 	echo isset($scripts_for_layout) ? $scripts_for_layout : '';
 	echo $this->element('sql_dump');

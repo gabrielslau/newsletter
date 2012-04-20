@@ -18,7 +18,7 @@ class NewslettersController extends AppController {
 		$this->Auth->allowedActions = array('view','newsletter_dispatch','disableEmails');
 	}
 
-	/*public function disableEmails(){
+	public function disableEmails(){
 		$this->autoRender = false;
 		$this->layout = 'ajax';
 		$listaemails = 'mmsocorromelo@hotmail.com;jorge.sdf@hotmail.com;jeaneslooes@ig.com.br;jcg_6@hotmail.com;zetefs@yahoo.com.br;jadnafms@hotmail.com;mardeiros@hotmail.com;ive.machado@hotmail.com;ma.raj.santos@hotmail.com;mgracafernandes@hotmail.com;marialuizacmc@hotmail.com;galvesfernandes@yahoo.com.br;mardeiros@hotmal.com;gabysalgado02@hotmail.com;marcusfal@hotmail.com;fla_azeoliveira@hotmail.com;mdantas7@bol.com.br;ffatima.dantas@hotmail.com;ettna@hotmail.com;joasmanso@hotmail.com;elzadn@hotmail.com;marcia.oliveira54@hotmail.com;docarmosevero@yahoo.com.br;magnalda@hotmail.com;ferreira.rh@hotmail.com;luzeildeandrade@hotmail.com;diego_lunna@hotmail.com;aymoneluiz@hotmail.com;cristinabronzo@yahoo.com.br;luizaugusto201158@hotmail.com;cristianolemes.rn@hotmail.com;dudu-b1@live.com;cilnat@hotmail.com;luci710@hotmail.com;indya_natalrn@hotmail.com;lrgandrade@gmail.com;hmelo@supercabo.com.br;liduinahr@hotmail.com;atlas.rn@atlastranslog.com.br;ledasales@hotmail.com;lania_n@hotmail.com;laisemso@hotmail.com;kash@kashinvest.com.br;junioraraujo262@hotmail.com;jsamuelmedeiros@hotmail.com;rodrigues@live.de;elieneroque@yahoo.com.br;josealentejano869@hotmail.com;marlow2011.1@hotmail.com;jorge.sdf@hotmail.com;jeaneslooes@ig.com.br;jcg_6@hotmail.com;jadnafms@hotmail.com;ive.machado@hotmail.com;mgracafernandes@hotmail.com;galvesfernandes@yahoo.com.br;gabysalgado02@hotmail.com;fla_azeoliveira@hotmail.com;ffatima.dantas@hotmail.com;ettna@hotmail.com;elzadn@hotmail.com;docarmosevero@yahoo.com.br;ferreira.rh@hotmail.com;diego_lunna@hotmail.com;cristinabronzo@yahoo.com.br;cristianolemes.rn@hotmail.com;cilnat@hotmail.com;indya_natalrn@hotmail.com;hmelo@supercabo.com.br;atlas.rn@atlastranslog.com.brn';
@@ -29,7 +29,7 @@ class NewslettersController extends AppController {
 			echo 'OK';
 		}else echo 'POIA';
 
-		*/// $log = $this->Newsletter->Email->getDataSource()->getLog();debug($log);exit;
+		// $log = $this->Newsletter->Email->getDataSource()->getLog();debug($log);exit;
 	}
 
 	public function newsletter_dispatch(){
@@ -43,120 +43,6 @@ class NewslettersController extends AppController {
 		}
 		else echo $this->Newsletterdispatch->getError();*/
 	}
-
-
-
-	public function enviar_agendadas_simples() {
-		
-		die('funcao desabilitada');
-		$this->loadModel('Newslettersemail');
-        $this->loadModel('Newslettersgroup');
-        $this->loadModel('Newslettersqueue');
-        $this->loadModel('Newsletterslog');
-
-        $max_sent_per_hour = 500;     // Máximo de emails enviados por vez
-
-
-
-
-
-        /**
-         * Verifica se há alguma newsletter agendada para hoje
-        */
-        	// TODO: Fazer a verificação a nível de hora e minuto
-
-        $this->Newslettersqueue->Behaviors->attach('Containable');
-        $Newslettersqueue = $this->Newslettersqueue->find('first', array(
-        	'conditions'=>array(
-        		"`status` = '0'",
-        		"CAST(Newslettersqueue.data_envio AS DATE) = CAST( NOW() AS DATE )"
-        	),
-        	'contain'=>array(
-        		'Newslettersuser',
-        		'Newslettersgroup'=>array(
-        			'Newslettersemail'=>array(
-        				'conditions'=>array("Newslettersemail.status = '0'"),
-        				'limit'=>$max_sent_per_hour
-        			)
-        		)
-        	)
-        ));
-
-        // $log = $this->Newslettersqueue->getDataSource()->getLog();debug($log);exit;
-
-        // print_r($Newslettersqueue);exit();
-
-        $lista_de_destinatarios = array();
-
-        /**
-         * Procura os emails dos grupos e monta uma lista de emails únicos para enviar
-        */
-        foreach ($Newslettersqueue['Newslettersgroup'] as $group) {
-        	foreach ($group['Newslettersemail'] as $email) {
-        		if( !in_array_r($email['email'], $lista_de_destinatarios) )
-        			$lista_de_destinatarios[] = array(
-        				'id' => $email['id'],
-        				'nome' => $email['nome'],
-        				'email' => $email['email']
-        			);
-        	}
-        }
-        // print_r($lista_de_destinatarios);exit();
-
-        /**
-         * Manda o email para a lista de emails selecionados
-        */
-
-        App::uses('CakeEmail', 'Network/Email');
-        foreach ($lista_de_destinatarios as $email) {
-        	
-			$email = new CakeEmail('smtp');
-			$email->to($email['email'])
-			// ->replyTo(array($email['email']=>$email['email']))
-			->from(array(MAIL_REMETENTE => MAIL_REMETENTENAME))
-			->template('newsletter', 'Emails'.DS.'html'.DS.'newsletter_'.$Newslettersqueue['Newslettersuser']['username'])
-			->emailFormat('html')
-			->subject( $Newslettersqueue['Newslettersqueue']['subject'] )
-			->viewVars(
-				array(
-					'message' => $Newslettersqueue['Newslettersqueue']['emailbody'],
-				)
-			);
-
-			if(!$email->send()){
-				CakeLog::write("debug", "Email de ".$Newslettersqueue['Newslettersuser']['nome']." enviado para ".$email['email']." na Newslettersqueue # ".$Newslettersqueue['Newslettersqueue']['id']." falhou.");
-			}else{
-				// A newsletter foi enviada, então atualiza o ID
-				$this->Newslettersemail->id = $email['id'];
-				$this->Newslettersemail->saveField('status',true);
-
-
-
-			}
-        }
-
-
-
-
-		$this->Newsletter->tipo_news = 'agendada';
-		$this->Newsletter->send();
-		if($this->Newsletter->sended){echo $this->Newsletter->getLog();}
-		else{echo $this->Newsletter->getError();}
-
-
-		exit;
-
-
-		$this->set('newslettersagendadas', $this->paginate());
-	}
-
-
-
-
-
-
-
-
 
 
 
