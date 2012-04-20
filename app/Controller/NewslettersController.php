@@ -18,7 +18,7 @@ class NewslettersController extends AppController {
 		$this->Auth->allowedActions = array('view','newsletter_dispatch','disableEmails');
 	}
 
-	public function disableEmails(){
+	/*public function disableEmails(){
 		$this->autoRender = false;
 		$this->layout = 'ajax';
 		$listaemails = 'mmsocorromelo@hotmail.com;jorge.sdf@hotmail.com;jeaneslooes@ig.com.br;jcg_6@hotmail.com;zetefs@yahoo.com.br;jadnafms@hotmail.com;mardeiros@hotmail.com;ive.machado@hotmail.com;ma.raj.santos@hotmail.com;mgracafernandes@hotmail.com;marialuizacmc@hotmail.com;galvesfernandes@yahoo.com.br;mardeiros@hotmal.com;gabysalgado02@hotmail.com;marcusfal@hotmail.com;fla_azeoliveira@hotmail.com;mdantas7@bol.com.br;ffatima.dantas@hotmail.com;ettna@hotmail.com;joasmanso@hotmail.com;elzadn@hotmail.com;marcia.oliveira54@hotmail.com;docarmosevero@yahoo.com.br;magnalda@hotmail.com;ferreira.rh@hotmail.com;luzeildeandrade@hotmail.com;diego_lunna@hotmail.com;aymoneluiz@hotmail.com;cristinabronzo@yahoo.com.br;luizaugusto201158@hotmail.com;cristianolemes.rn@hotmail.com;dudu-b1@live.com;cilnat@hotmail.com;luci710@hotmail.com;indya_natalrn@hotmail.com;lrgandrade@gmail.com;hmelo@supercabo.com.br;liduinahr@hotmail.com;atlas.rn@atlastranslog.com.br;ledasales@hotmail.com;lania_n@hotmail.com;laisemso@hotmail.com;kash@kashinvest.com.br;junioraraujo262@hotmail.com;jsamuelmedeiros@hotmail.com;rodrigues@live.de;elieneroque@yahoo.com.br;josealentejano869@hotmail.com;marlow2011.1@hotmail.com;jorge.sdf@hotmail.com;jeaneslooes@ig.com.br;jcg_6@hotmail.com;jadnafms@hotmail.com;ive.machado@hotmail.com;mgracafernandes@hotmail.com;galvesfernandes@yahoo.com.br;gabysalgado02@hotmail.com;fla_azeoliveira@hotmail.com;ffatima.dantas@hotmail.com;ettna@hotmail.com;elzadn@hotmail.com;docarmosevero@yahoo.com.br;ferreira.rh@hotmail.com;diego_lunna@hotmail.com;cristinabronzo@yahoo.com.br;cristianolemes.rn@hotmail.com;cilnat@hotmail.com;indya_natalrn@hotmail.com;hmelo@supercabo.com.br;atlas.rn@atlastranslog.com.brn';
@@ -29,7 +29,7 @@ class NewslettersController extends AppController {
 			echo 'OK';
 		}else echo 'POIA';
 
-		// $log = $this->Newsletter->Email->getDataSource()->getLog();debug($log);exit;
+		*/// $log = $this->Newsletter->Email->getDataSource()->getLog();debug($log);exit;
 	}
 
 	public function newsletter_dispatch(){
