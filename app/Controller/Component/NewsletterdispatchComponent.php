@@ -282,9 +282,9 @@ class NewsletterdispatchComponent extends Component {
                 $validate   = new Validation();
                 $ids_queue  = array();
 
-                $fileNewsletterLog = new File('files'.DS.'tmp'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
-                if(!$fileNewsletterLog->exists()){
-                    $fileNewsletterLog->create();
+                $fileNewslettersEmailsSent = new File('files'.DS.'logs'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
+                if(!$fileNewslettersEmailsSent->exists()){
+                    $fileNewslettersEmailsSent->create();
                 }
                 
                 // Envia a Newsletter para cada usuário da lista
@@ -314,7 +314,7 @@ class NewsletterdispatchComponent extends Component {
                         }else{
                             $ids_queue[] = $destinatario['id']; // guarda o ID do usuáiro que recebeu o email, para eliminar da lista
                             
-                            $fileNewsletterLog->append($destinatario['id'].';'); //Adiciona o ID do email enviado no log da newsletter
+                            $fileNewslettersEmailsSent->append($destinatario['id'].';'); //Adiciona o ID do email enviado no log da newsletter
 
                             /*$ModelEmail->recursive = 0;
                             $ModelEmail->id = $destinatario['id'];
@@ -332,16 +332,22 @@ class NewsletterdispatchComponent extends Component {
                     }
                 endforeach;
 
-                $fileNewsletterLog->close();
+                $fileNewslettersEmailsSent->close();
                 // Limpa os emails da fila
                 // $this->disableEmailQueue($ids_queue);
 
                 // A newsletter foi "teoricamente" enviada para os emails da lista, então cria/atualiza um Log de registro
 
-                $sent = !empty($this->Newsletter['Log']['sent']) ? $this->Newsletter['Log']['sent'] : 0; //Enviadas até o momento
-                $sent += count($ids_queue); // Atualiza o contador com o total de emails enviados na última remessa
+                // $sent = !empty($this->Newsletter['Log']['sent']) ? $this->Newsletter['Log']['sent'] : 0; //Enviadas até o momento
+                // $sent += count($ids_queue); // Atualiza o contador com o total de emails enviados na última remessa
 
-                $ModelLog = ClassRegistry::init('Log');
+
+                // Armazena o registro de log para newsletter em arquivo individual para evitar "sobrecarregamento no database" (que frescura ¬¬)
+                $this->createLog(count($ids_queue));
+                
+
+
+               /* $ModelLog = ClassRegistry::init('Log');
                 if( empty($this->Newsletter['Log']['id']) ){
                     $ModelLog->create();
                     $ModelLog->set('start_sending', date('Y-m-d H:i:s'));
@@ -354,7 +360,9 @@ class NewsletterdispatchComponent extends Component {
                 $ModelLog->set('sent', $sent); // Contador de newsletters enviadas
                 $ModelLog->save();
 
-
+                $logmodel = $ModelLog->getDataSource()->getLog();
+                debug($logmodel);
+                exit;*/
                 
 
                 $this->setLog("Newsletter # ".$this->Newsletter['Newsletter']['id'].' enviada em '.date('Y-m-d H:i:s'));
@@ -371,6 +379,37 @@ class NewsletterdispatchComponent extends Component {
             return false;
         }
     }// end function send()
+
+
+/**
+* Armazena o registro de log para newsletter em arquivo individual
+* 
+* Salvar o log no banco está sobrecarregando o servidor de dados ( Ô.õ_ )
+* 
+* FORMATO
+* Linhas separadas por +
+* Campos separados por ;
+* Valores sepadados por ,
+* 
+* @access public
+* @return void
+*/
+    function createLog($sent=0){
+        App::uses('File', 'Utility');
+        $fileNewsletterLog = new File('files'.DS.'logs'.DS.'newsletterlog-'.$this->Newsletter['Newsletter']['id'].'.txt');
+        if(!$fileNewsletterLog->exists()){
+            $fileNewsletterLog->create();
+        }
+
+        // FORMATO
+        // Linhas separadas por +
+        // Campos separados por ;
+        // Valores sepadados por ,
+        $fileNewsletterLog->append( 'sent,'. $sent.';' );
+        $fileNewsletterLog->append( 'date,'. date('Y-m-d H:i:s').'+' );
+       
+        $fileNewsletterLog->close();
+    }
 
 /**
 * Seleciona alguma newsletter na fila de envio para o dia atual ou pendentes dos dias anteriores
@@ -428,21 +467,22 @@ class NewsletterdispatchComponent extends Component {
             // Retorna os emails associados a newsletter
             
             $ModelNewsletter = ClassRegistry::init('Newsletter');
-            $conditionsForEmails = array("Email.status = '1'");
+            $conditionsForEmails = array("Email.status = '1'","Email.enabled = '1'");
 
             // Verifica se há algum arquivo de registro de emails que receberam a newsletter e adiciona no filtro
             // Esse arquivo guarda os IDs dos emails que receberam a newsletter, reparados por VIRGULA (,)
             App::uses('File', 'Utility');
-            $fileNewsletterLog = new File('files'.DS.'tmp'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
+            $fileNewslettersEmailsSent = new File('files'.DS.'logs'.DS.'newsletter-'.$this->Newsletter['Newsletter']['id'].'.txt');
 
-            if($fileNewsletterLog->exists()){
-                $content = $fileNewsletterLog->read();
-                if($content){
+            if($fileNewslettersEmailsSent->exists()){
+                $content = $fileNewslettersEmailsSent->read();
+                if( !empty($content) && $content){
                     $content = explode(';', $content);
                     $content = array_filter($content, "checkEmpty"); //Limpa os campos vazios do array
                     
                     $conditionsForEmails = array(
                         "Email.status = '1'",
+                        "Email.enabled = '1'",
                         'NOT'=>array(
                             'Email.id'=>$content
                         )
@@ -494,7 +534,8 @@ class NewsletterdispatchComponent extends Component {
 
 
             /**
-             * Procura os emails dos grupos e monta uma lista de emails únicos para enviar fazendo a filtragem de quantidade máxima de emails
+             * Procura os emails dos grupos e monta uma lista de emails únicos para enviar 
+             * fazendo a filtragem de quantidade máxima de emails
             */
 
             $i = 0; //contador geral
@@ -504,7 +545,7 @@ class NewsletterdispatchComponent extends Component {
             
             // armazena os emails na lista
             if(!empty($EmailsInNews)):
-                // print_r($this->Newsletter);exit();
+
                 foreach ($EmailsInNews as $email) {
                     if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
 
@@ -518,6 +559,7 @@ class NewsletterdispatchComponent extends Component {
 
             // Procura emails na lista de grupos
             if(!empty($GroupsInNews)):
+
                 foreach ($GroupsInNews as $group) {
                     foreach ($group['Email'] as $email){
                         if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
@@ -562,13 +604,67 @@ class NewsletterdispatchComponent extends Component {
             $this->setLog( __('A newsletter # %s foi enviada para todos os remetentes e foi desabilitada. ', $this->Newsletter['Newsletter']['id'] ));
 
             // Atualiza o log com a data em que terminou de enviar a newsletter
-            if( !empty($this->Newsletter['Log']['id']) ){
-                $ModelNewsletter->Log->id = $this->Newsletter['Log']['id'];
-                $ModelNewsletter->Log->set('end_sending',date('Y-m-d H:i:s'));
-                $ModelNewsletter->Log->save();
-            }
+            $this->updateLog();
         }
     } //end disableNewsletterQueue()
+
+
+/**
+* Atualiza o log com a data em que terminou de enviar a newsletter
+* 
+* FORMATO
+* Linhas separadas por +
+* Campos separados por ;
+* Valores sepadados por ,
+* 
+* @access private
+* @return void
+*/
+    function updateLog(){
+        App::uses('File', 'Utility');
+        $fileNewsletterLog = new File('files'.DS.'logs'.DS.'newsletterlog-'.$this->Newsletter['Newsletter']['id'].'.txt');
+        
+        // Caso aconteça algum imprevisto, gera um arquivo "fantasma" para fingir o log (esperasse que não seja necessário executar isso)
+        if(!$fileNewsletterLog->exists()){
+            $fileNewsletterLog->create();
+            $fileNewsletterLog->append( 'sent,0;' );
+            $fileNewsletterLog->append( 'date,'. date('Y-m-d H:i:s').'+' );
+        }
+        $contentLog = $fileNewsletterLog->read();
+
+        $LogLines   = explode('+', $contentLog);
+        $LogLines   = array_filter($LogLines, "checkEmpty"); //Limpa os campos vazios do array
+        $countLines = count($LogLines);
+        $LogTotal   = $start_sending = $end_sending = 0;
+
+        $this->setLog('Numero de linhas no arquivo: '.$countLines);
+
+        foreach ($LogLines as $k=>$line) {
+            $line = explode(';', $line);
+
+            foreach ($line as $fields) {
+                $field = explode(',', $fields);
+
+                if($field[0] == 'sent') $LogTotal += $field[1]; // Contador para o campo "sent" do arquivo de texto
+                if($field[0] == 'date' && $k==0) $start_sending = $field[1]; // Marca a data inicial do envio da newsletter
+                if($field[0] == 'date' && ( ($k==$countLines-1) || ($countLines == 1))) $end_sending = $field[1]; // Marca a data final do envio da newsletter
+            }
+        }
+
+        // Atualiza o Log da newsletter no banco com o resultado final gravado em texto
+        $ModelLog = ClassRegistry::init('Log');
+        
+        $ModelLog->create();
+        $ModelLog->set('newsletter_id', $this->Newsletter['Newsletter']['id']);
+        $ModelLog->set('sent', $LogTotal); // Contador de newsletters enviadas
+        $ModelLog->set('start_sending', $start_sending);
+        $ModelLog->set('end_sending', $end_sending);
+        $ModelLog->save();
+
+        // $logmodel = $ModelLog->getDataSource()->getLog();debug($logmodel);exit;
+
+        $fileNewsletterLog->close();
+    }
 
 /**
 * Desativa alguns emails da lista de emails deixando-os temporariamente indisponíveis para novo envio
@@ -599,6 +695,12 @@ class NewsletterdispatchComponent extends Component {
     function refreshEmailQueue(){
         $ModelEmail     = ClassRegistry::init('Email');
         // $ModelEmail->id = $this->Newsletter['Newsletter']['id'];
+
+        // Remove relacionamento dos Models que não serão usados nessa consulta
+        $ModelEmail->unbindModel(array(
+            'hasMany' => array('Queue'),
+            'hasAndBelongsToMany' => array('Newsletter','Group')
+        ));
 
         if (!$ModelEmail->updateAll( array('status'=>true) )) {
             $this->setLog( 'Não foi possível resetar a lista de email');
