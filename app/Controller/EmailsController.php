@@ -14,6 +14,11 @@ class EmailsController extends AppController {
 		'cacheConfig' => 'long'
 	);
 
+	public function beforeFilter(){
+		//Ações permitidas se o usuário não estiver logado
+		$this->Auth->allowedActions = array('unsubscribe');
+	}
+
 
 	/**
 	 * validatelist method
@@ -37,6 +42,33 @@ class EmailsController extends AppController {
 
 	}//end index
 
+	function unsubscribe($key=null){
+		$this->layout = 'login';
+
+		if ($this->request->is('post')) {
+			$this->Email->recursive = -1;
+			$email = $this->Email->findByEmail( $this->request->data['Email']['email'] );
+			if( !empty($email) ){
+				$this->Email->id = $email['Email']['id'];
+				$this->Email->saveField('enabled',0);
+
+				$this->set('mensagem','O email foi desativado. Você não receberá mais os nossos informativos');
+			}else{
+				$this->set('mensagem','Este email não está cadastrado em nosso sistema');
+			}
+		}elseif(!empty($key)){
+			$this->Email->recursive = -1;
+			$email = $this->Email->findByEmail( base64_decode($key) );
+			if( !empty($email) ){
+				$this->Email->id = $email['Email']['id'];
+				$this->Email->saveField('enabled',0);
+
+				$this->set('mensagem','O email foi desativado. Você não receberá mais os nossos informativos');
+			}else{
+				$this->set('mensagem','Este email não está cadastrado em nosso sistema');
+			}
+		}
+	}
 
 
 	/**

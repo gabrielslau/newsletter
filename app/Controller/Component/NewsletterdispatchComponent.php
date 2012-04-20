@@ -326,7 +326,7 @@ class NewsletterdispatchComponent extends Component {
                             $this->setLog("Email enviado com sucesso para ".$destinatario['email']);
                         }// end CakeMail->send()
 
-                        sleep(2); // Aguarda 5 segundos antes de enviar o próximo email ( BUG DO SMTP )
+                        // sleep(2); // Aguarda 5 segundos antes de enviar o próximo email ( BUG DO SMTP )
                     }else{
                         $this->setLog("O Email ".$destinatario['email']." não é válido");
                     }
@@ -556,7 +556,7 @@ class NewsletterdispatchComponent extends Component {
         $ModelNewsletter     = ClassRegistry::init('Newsletter');
         $ModelNewsletter->id = $this->Newsletter['Newsletter']['id'];
 
-        if (!$ModelNewsletter->saveField('status',"'0'")) {
+        if (!$ModelNewsletter->saveField('status',0)) {
             $this->setLog( __('A Newsletter # %s não pôde ser desativada. ', $this->Newsletter['Newsletter']['id'] ));
         }else{
             $this->setLog( __('A newsletter # %s foi enviada para todos os remetentes e foi desabilitada. ', $this->Newsletter['Newsletter']['id'] ));
