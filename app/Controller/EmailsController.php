@@ -17,7 +17,7 @@ class EmailsController extends AppController {
 	public function beforeFilter(){
 		parent::beforeFilter();
 		//Ações permitidas se o usuário não estiver logado
-		$this->Auth->allowedActions = array('unsubscribe');
+		$this->Auth->allowedActions = array('unsubscribe','validatelist');
 	}
 
 
@@ -28,19 +28,44 @@ class EmailsController extends AppController {
 	 */
 	function validatelist() {
 		$this->autoRender = false;
-//$this->request->params['categoria']
 		App::uses('Validation', 'Utility');
+		App::uses('File', 'Utility');
 
 		$validate = new Validation();
+		$fileEmails = new File('files'.DS.'logs'.DS.'emails_invalidos.txt');
+        if(!$fileEmails->exists()){
+            $fileEmails->create();
+        }
 
 		$emails = $this->Email->find('list' );
 
 		foreach($emails as $id=>$email){
-			if( !$validate->email( $email ) ){
-				echo $email.'<br />';
+			if( !$validate->email( $email, true ) ){
+				$fileEmails->append($id.';');
 			}
 		}
 
+	}//end index
+
+	function disablelist() {
+		$this->autoRender = false;
+		App::uses('File', 'Utility');
+
+		$fileEmails = new File('files'.DS.'logs'.DS.'emails_invalidos.txt');
+		$content = $fileEmails->read();
+		if(!empty($content) && $content){
+
+			$content = explode(';', $content);
+			$content = array_filter($content, "checkEmpty"); //Limpa os campos vazios do array
+
+			if (!$this->Email->deleteAll( array('Email.id'=>$content), false )) {
+	            die('Não foi possível deletar');
+	        }else{
+	        	$log = $this->Email->getDataSource()->getLog();debug($log);exit;
+	        }
+		}else{
+			die('Não foi possível ler o arquivo.');
+		}
 	}//end index
 
 	function unsubscribe($key=null){
@@ -103,6 +128,9 @@ class EmailsController extends AppController {
 
 		if($this->request->is('ajax') || 1==1){
 			App::uses('File', 'Utility');
+			App::uses('Validation', 'Utility');
+
+			$validate = new Validation();
 
 			$file = new SplFileObject($this->request->data['path'].$this->request->data['filename']);
 			// $file = new SplFileObject('files/tmp/tmp_1334553968-newslettersemails-temoscasa.csv');
@@ -128,7 +156,7 @@ class EmailsController extends AppController {
 		            // print_r($line);exit();
 
 	             if( isset($line[0])){
-		            if( !validarEmail($line[0]) ) {
+		            if( !$validate->email($line[0],true) ) {
 						// Insere o registro de erro no arquivo		            	
 					    $fileErrors->append('O Email('.$line[0].'), não é válido');					    
 		            	$erros[] = 'O Email('.$line[0].'), não é válido'; // die("{" . $this->Json->encode(array('msg'=>$line[0],'status'=>'error')) . "}");
