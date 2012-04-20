@@ -31,7 +31,7 @@ Cache::config('short', array(
 */
 Configure::write('MinifyAsset', false);
 
-define('NAMESITE', 'Profissional do Brasil' );
+define('NAMESITE', 'Professional Worldwide' );
 // echo phpinfo();exit;
 
 /*
@@ -40,7 +40,7 @@ define('NAMESITE', 'Profissional do Brasil' );
 	define('MAIL_PORTA', 587);
 	define('MAIL_HOST', "smtp.profissionaldobrasil.com.br");
 	define('MAIL_USER', "webmaster@profissionaldobrasil.com.br");
-	define('MAIL_REMETENTE', "webmaster@profissionaldobrasil.com.br");
+	define('MAIL_REMETENTE', "sac@profissionaldobrasil.com.br");
 	define('MAIL_REMETENTENAME', NAMESITE);
 
 
@@ -114,7 +114,8 @@ function implode_r($params=array()){
 * Credits: This is a php port from Rafael Lima's original Javascript CSS Browser Selector: http://rafael.adm.br/css_browser_selector
 */
 function css_browser_selector($ua=null) {
-	$ua = ($ua) ? strtolower($ua) : strtolower($_SERVER['HTTP_USER_AGENT']);		
+	// $ua = ($ua) ? strtolower($ua) : strtolower($_SERVER['HTTP_USER_AGENT']);		
+	$ua = ($ua) ? strtolower($ua) : strtolower(env('HTTP_USER_AGENT'));
 
 	$g = 'gecko';
 	$w = 'webkit';

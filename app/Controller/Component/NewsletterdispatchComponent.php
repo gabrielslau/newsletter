@@ -294,7 +294,7 @@ class NewsletterdispatchComponent extends Component {
                         // die($destinatario['email']);exit();
                         $CakeEmail->template( 'newsletter', $this->Newsletter['Template']['file'] )
                         ->emailFormat('html')
-                        // ->name(  )
+                        ->from(array( $this->Newsletter['User']['email'] => $this->Newsletter['User']['nome'].' | '.NAMESITE))
                         ->to( $destinatario['email'] )
                         ->subject( $this->Newsletter['Newsletter']['subject'] )
                         ->viewVars(
