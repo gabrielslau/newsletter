@@ -33,11 +33,25 @@ class EmailsController extends AppController {
 
 		$validate = new Validation();
 		$fileEmails = new File('files'.DS.'logs'.DS.'emails_invalidos.txt');
+
+		$conditions = array('conditions'=>array('Email.enabled'=>true));
+
         if(!$fileEmails->exists()){
             $fileEmails->create();
+        }else{
+        	$content = $fileEmails->read();
+        	if(!empty($content) && $content){
+
+				$content = explode(';', $content);
+				$content = array_filter($content, "checkEmpty"); //Limpa os campos vazios do array
+				// Faz a filtragem na seleção dos emails para evitar duplicar os resultados no arquivo
+				$conditions['conditions']['NOT'] = array(
+					'Email.id'=>$content
+				);
+			}
         }
 
-		$emails = $this->Email->find('list' );
+		$emails = $this->Email->find('list', $conditions );
 
 		foreach($emails as $id=>$email){
 			if( !$validate->email( $email, true ) ){

@@ -547,11 +547,11 @@ class NewsletterdispatchComponent extends Component {
             if(!empty($EmailsInNews)):
 
                 foreach ($EmailsInNews as $email) {
-                    if( !in_array_r($email['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['email'], true) ){
+                    if( !in_array_r($email['Email']['email'], $this->destinatarios) && $i <= $this->max_sent_per_hour && $validate->email($email['Email']['email'], true) ){
 
-                        $this->destinatarios[$i]['email'] = $email['email'];
-                        $this->destinatarios[$i]['nome']  = $email['nome'];
-                        $this->destinatarios[$i]['id']    = $email['id'];
+                        $this->destinatarios[$i]['email'] = $email['Email']['email'];
+                        $this->destinatarios[$i]['nome']  = $email['Email']['nome'];
+                        $this->destinatarios[$i]['id']    = $email['Email']['id'];
                         $i++;
                     }
                 }
