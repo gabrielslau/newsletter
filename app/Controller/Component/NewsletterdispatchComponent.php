@@ -216,7 +216,7 @@ class NewsletterdispatchComponent extends Component {
         $this->controller = $controller;
 
         // overiddable variables
-        $this->max_sent_per_hour   = 300;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
+        $this->max_sent_per_hour   = 245;           // Máximo de emails enviados por vez (o limite da locaweb é 500, mas utilizamos a menos por garantia)
         //$this->sec               = 10;            // Tempo entre o envio de um pacote e outro (em segundos)
         //$this->limitMail         = 500;           // Limite de emails por hora
         //$this->secLimitMail      = 2400;          // Tempo de pausa por hora (40 minutos = 2400 segundos)

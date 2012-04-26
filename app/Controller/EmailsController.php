@@ -140,15 +140,16 @@ class EmailsController extends AppController {
 		$this->autoRender = false;
 		$this->layout     = 'ajax';
 
-		if($this->request->is('ajax') || 1==1){
+		// if($this->request->is('ajax') || 1==1){
+		if($this->request->is('ajax')){
 			App::uses('File', 'Utility');
 			App::uses('Validation', 'Utility');
 
 			$validate = new Validation();
 
 			$file = new SplFileObject($this->request->data['path'].$this->request->data['filename']);
-			// $file = new SplFileObject('files/tmp/tmp_1334553968-newslettersemails-temoscasa.csv');
-			// $this->request->data['categorias'] = array(1,2);
+			// $file = new SplFileObject('files/tmp/newslettersemails-temoscasa.csv');
+			// $this->request->data['categorias'] = array(1);
  
 	        /* set file flags */
 	        $file->setFlags(SplFileObject::DROP_NEW_LINE);

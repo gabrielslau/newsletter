@@ -33,7 +33,7 @@
                 	<!-- <li><a href="#">Profile</a></li> -->
                     <!-- <li><a href="#">Change Password</a></li> -->
                     <?php 
-                        echo '<li>'.$this->Html->link('Voltar para o site','/').'</li>';
+                        // echo '<li>'.$this->Html->link('Voltar para o site','/').'</li>';
                         echo '<li>'.$this->Html->link('Sair',array('controller'=>'users','action'=>'logout')).'</li>';
                     ?>
                 </ul>
