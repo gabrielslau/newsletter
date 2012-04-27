@@ -5,7 +5,7 @@
     
     	<!-- Logo Wrapper, images put within this wrapper will always be vertically centered -->
     	<div id="mws-logo-wrap">
-            <?php echo $this->Html->image('admin/profissional-logo.gif',array('alt'=>'mws admin')) ?>
+            <?php echo $this->Html->image('admin/logomarca-professionalworldwide.gif',array('alt'=>'mws admin')) ?>
         </div>
     </div>
     
