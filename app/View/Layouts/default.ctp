@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<?php echo $this->element('estrutura/admin/head');?>
+	<?php echo $this->element('estrutura/admin/analytics',array('cache' => array('time' => '+1 year')));?>
 </head>
 
 <body>
